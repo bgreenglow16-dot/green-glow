@@ -8,6 +8,7 @@ export function json(data, status = 200, headers = {}) {
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
       ...headers,
     },
   });
@@ -54,7 +55,13 @@ export async function isAdmin(request, env) {
     return false;
   }
 
-  return signature === (await sign(expiry, env.SESSION_SECRET));
+  const expected = await sign(expiry, env.SESSION_SECRET);
+  if (signature.length !== expected.length) return false;
+  let difference = 0;
+  for (let index = 0; index < expected.length; index += 1) {
+    difference |= signature.charCodeAt(index) ^ expected.charCodeAt(index);
+  }
+  return difference === 0;
 }
 
 export async function requireAdmin(request, env) {

@@ -64,6 +64,7 @@ orderForm.addEventListener(
           deliveryType,
           items,
           notes: value("nt"),
+          website: value("website"),
         }),
       });
       const result = await response.json().catch(() => ({}));

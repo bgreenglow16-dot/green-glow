@@ -3,6 +3,13 @@ import {
   json,
   sessionCookie,
 } from "../../_shared/admin.js";
+import {
+  clientIp,
+  forbidCrossOrigin,
+  rateLimited,
+  readJsonBody,
+  tooManyRequests,
+} from "../../_shared/security.js";
 
 const encoder = new TextEncoder();
 
@@ -23,12 +30,18 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "إعدادات دخول الإدارة غير مكتملة." }, 503);
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "تعذر قراءة كلمة المرور." }, 400);
+  const blocked = forbidCrossOrigin(request);
+  if (blocked) return blocked;
+  if (
+    (await rateLimited(env, `login:${clientIp(request)}`, 5, 900)) ||
+    (await rateLimited(env, "login:all", 40, 900))
+  ) {
+    return tooManyRequests("محاولات كثيرة. حاول مرة أخرى بعد 15 دقيقة.");
   }
+
+  const parsed = await readJsonBody(request, 2000);
+  if (parsed.error) return parsed.error;
+  const body = parsed.body;
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return json({ error: "بيانات تسجيل الدخول غير صحيحة." }, 400);
   }

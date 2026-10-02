@@ -193,9 +193,6 @@ footer .wm{font:700 clamp(60px,15vw,210px)/.9 var(--hd);color:transparent;-webki
 footer .row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:40px;font-size:14px}
 .sticky{position:fixed;inset-inline:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:45;transform:translateY(170%);transition:transform .7s var(--ease)}.sticky.on{transform:none}.sticky .btn{width:100%;justify-content:space-between;box-shadow:0 20px 40px -10px rgba(0,0,0,.55)}
 @media(min-width:961px){.sticky{display:none}}
-#adm{position:fixed;inset:0;z-index:95;background:var(--iv);overflow:auto;padding:calc(30px + env(safe-area-inset-top,0px)) 0 60px;display:none}#adm.on{display:block}
-.tb{width:100%;border-collapse:collapse;font-size:14px;min-width:780px}.tb th,.tb td{padding:12px;border-bottom:1px solid rgba(11,31,23,.1);text-align:right;vertical-align:top}.tb th{background:var(--bg);color:var(--iv);font-weight:500}
-.ts{overflow-x:auto;border-radius:20px;background:#fff;margin-top:20px}.tb select{font:inherit;padding:6px 10px;border-radius:10px;border:1px solid rgba(11,31,23,.2)}
 .pbadge{align-self:flex-start;margin-top:14px;background:var(--gold);color:var(--bg);font:600 13px var(--hd);padding:7px 16px;border-radius:999px;animation:pulse 2.4s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(207,174,107,.6)}70%,100%{box-shadow:0 0 0 12px rgba(207,174,107,0)}}
 .pr .ghost{border-color:currentColor}.pc:not(.dk) .pr .ghost{color:var(--g6)!important}
@@ -350,6 +347,7 @@ header{transition:none}header.hide{transform:none}
 <div class="sh"><div class="rv"><div class="tag" style="color:var(--g6)">الطلب</div><h2>أكمل طلبك <span class="lat">en une minute</span></h2></div><p class="rv" style="--d:.1s">الدفع عند الاستلام. لن نشحن أي طلب قبل مكالمة التأكيد.</p></div>
 <div class="ob" id="ob">
 <form class="card rv" id="fm" novalidate>
+<input id="website" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
 <div class="lbl"><span>1</span>اختر منتجاتك</div>
 <div class="tiles" id="tiles"></div>
 <div class="lbl"><span>2</span>معلوماتك</div>
@@ -397,12 +395,7 @@ header{transition:none}header.hide{transform:none}
 <div class="row"><span class="lat" style="font-size:20px;color:var(--gold2)">La nature au service de vos cheveux</span><span>© 2026 Green Glow Natural Oil · الدفع عند الاستلام</span></div></div></footer>
 <div class="sticky" id="sk"><a class="btn" href="#order">اطلب الآن · الدفع عند الاستلام<i>←</i></a></div>
 
-<section id="adm" aria-label="لوحة الطلبات"><div class="wrap">
-<div class="sh" style="margin:0"><div><div class="tag" style="color:var(--g6)">لوحة المؤكِّد</div><h2 style="font-size:40px">الطلبات المسجلة</h2></div>
-<div class="cta"><button class="btn" id="csv" type="button">تصدير المؤكَّدة لشركة التوصيل<i>↓</i></button><a class="ghost" href="#top">إغلاق</a></div></div>
-<p style="color:var(--mut);margin-top:10px">تظهر هنا الطلبات المسجلة من هذا المتصفح. غيّر الحالة بعد كل مكالمة، ثم صدّر الطلبات «المؤكَّدة» فقط.</p>
-<div class="ts"><table class="tb"><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الولاية / البلدية</th><th>المنتجات</th><th>المجموع</th><th>الحالة</th></tr></thead><tbody id="tbd"></tbody></table></div>
-</div></section>
+
 
 <script>
 /* ====== الإعدادات: عدّل الأسعار ورقم الواتساب هنا ====== */
@@ -487,15 +480,6 @@ $("#fm").onsubmit=e=>{e.preventDefault();
 function confetti(){for(let i=0;i<36;i++){const s=document.createElement("span");s.className="cf";s.style.left=Math.random()*100+"vw";s.style.background=["#cfae6b","#1e4a37","#e6cf9c","#7fae7a"][i%4];s.style.animationDuration=2.2+Math.random()*2+"s";s.style.animationDelay=Math.random()*.5+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),5000)}}
 $("#cp").onclick=async()=>{const i=$("#cp").firstChild;try{await navigator.clipboard.writeText(last);i.textContent="تم النسخ"}catch(e){i.textContent="انسخ النص يدوياً"}};
 $("#nw").onclick=()=>{$("#ok").hidden=true;$("#ob").hidden=false;$("#fm").reset();$("#seg").classList.remove("desk");P.forEach(p=>qty[p.id]=0);draw();$("#cp").firstChild.textContent="نسخ الطلب"};
-/* admin: افتح الرابط مع #admin */
-const tb=$("#tbd");function adm(){const L=store.get();tb.innerHTML=L.length?L.map((o,i)=>`<tr><td>${o.id}</td><td>${esc(o.name)}</td><td dir="ltr">${o.phone}</td><td>${esc(o.wilaya)} / ${esc(o.commune)}<br><small>${esc(o.address)} · ${o.delivery}</small></td><td>${esc(o.products)}</td><td>${fmt(o.total)}</td><td><select data-i="${i}">${["جديد","مؤكد","لا يرد","ملغي"].map(s=>`<option${s==o.status?" selected":""}>${s}</option>`).join("")}</select></td></tr>`).join(""):'<tr><td colspan="7" style="text-align:center;padding:40px;color:#66756a">لا توجد طلبات بعد</td></tr>'}
-tb.onchange=e=>{const L=store.get();L[+e.target.dataset.i].status=e.target.value;store.set(L)};
-function route(){if(location.hash=="#admin")location.replace("/admin")}addEventListener("hashchange",route);route();
-$("#csv").onclick=async()=>{const L=store.get().filter(o=>o.status=="مؤكد"),rows=[["الاسم","الهاتف","الولاية","البلدية","العنوان","نوع التوصيل","المنتجات","المبلغ للتحصيل","ملاحظة"],...L.map(o=>[o.name,o.phone,o.wilaya,o.commune,o.address,o.delivery,o.products,o.total,o.note])];
- const csv="\ufeff"+rows.map(r=>r.map(c=>`"${String(c??"").replace(/"/g,'""')}"`).join(",")).join("\n");
- try{await navigator.clipboard.writeText(csv);alert(L.length?`تم نسخ ${L.length} طلب مؤكد. الصقه في Excel أو Google Sheets.`:"لا توجد طلبات بحالة «مؤكد» بعد.")}catch(e){prompt("انسخ البيانات:",csv)}};
-
-
 /* cinematic scroll scene */
 const cine=$("#cine"),cs=$("#cs"),cbot=$("#cbot"),cjar=$("#cjar"),jl=$("#jl"),jm=$("#jm"),caps=$$(".ccap"),cpi=$("#cpi"),chint=$("#chint"),drs=$$("#drops i");
 const mkP=(el,n,from,to)=>Array.from({length:n},(_,i)=>{const e=document.createElement("i");e.className="pt";e._a=from+(to-from)*i/(n-1);el.appendChild(e);return e});

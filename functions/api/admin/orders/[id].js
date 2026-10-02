@@ -1,8 +1,11 @@
 import { json, requireAdmin } from "../../../_shared/admin.js";
+import { forbidCrossOrigin } from "../../../_shared/security.js";
 
 const statuses = new Set(["قيد التأكيد", "مؤكد", "لم يرد 1", "لم يرد 2", "غير مجاب", "ملغى"]);
 
 export async function onRequestPatch({ request, env, params }) {
+  const blocked = forbidCrossOrigin(request);
+  if (blocked) return blocked;
   const unauthorized = await requireAdmin(request, env);
   if (unauthorized) return unauthorized;
   if (!env.DB) return json({ error: "قاعدة الطلبات غير مهيأة." }, 503);
@@ -47,6 +50,8 @@ export async function onRequestPatch({ request, env, params }) {
 }
 
 export async function onRequestDelete({ request, env, params }) {
+  const blocked = forbidCrossOrigin(request);
+  if (blocked) return blocked;
   const unauthorized = await requireAdmin(request, env);
   if (unauthorized) return unauthorized;
   if (!env.DB) return json({ error: "قاعدة الطلبات غير مهيأة." }, 503);

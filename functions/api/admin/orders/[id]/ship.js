@@ -1,4 +1,5 @@
 import { json, requireAdmin } from "../../../../_shared/admin.js";
+import { forbidCrossOrigin } from "../../../../_shared/security.js";
 import {
   ZrError,
   communesOf,
@@ -11,6 +12,8 @@ import {
 } from "../../../../_shared/zr.js";
 
 export async function onRequestPost({ request, env, params }) {
+  const blocked = forbidCrossOrigin(request);
+  if (blocked) return blocked;
   const unauthorized = await requireAdmin(request, env);
   if (unauthorized) return unauthorized;
   if (!env.DB) return json({ error: "قاعدة الطلبات غير مهيأة." }, 503);

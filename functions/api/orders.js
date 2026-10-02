@@ -1,4 +1,11 @@
 import { json } from "../_shared/admin.js";
+import {
+  clientIp,
+  forbidCrossOrigin,
+  rateLimited,
+  readJsonBody,
+  tooManyRequests,
+} from "../_shared/security.js";
 import { deliveryPriceFor, getLocations, normalize } from "../_shared/zr.js";
 
 const products = {
@@ -15,14 +22,22 @@ function normalizeText(value, maxLength = 160) {
 export async function onRequestPost({ request, env, waitUntil }) {
   if (!env.DB) return json({ error: "قاعدة الطلبات غير مهيأة." }, 503);
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "تعذر قراءة بيانات الطلب." }, 400);
+  const blocked = forbidCrossOrigin(request);
+  if (blocked) return blocked;
+  if (await rateLimited(env, `order:${clientIp(request)}`, 6, 600)) {
+    return tooManyRequests("طلبات كثيرة في وقت قصير. حاول بعد قليل.");
   }
+
+  const parsed = await readJsonBody(request, 10000);
+  if (parsed.error) return parsed.error;
+  const body = parsed.body;
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return json({ error: "بيانات الطلب غير صحيحة." }, 400);
+  }
+
+  // Honeypot: real visitors never see or fill this field; bots do.
+  if (typeof body.website === "string" && body.website.trim() !== "") {
+    return json({ ok: true, orderId: 0 });
   }
 
   const customerName = normalizeText(body.customerName, 120);
@@ -40,6 +55,9 @@ export async function onRequestPost({ request, env, waitUntil }) {
   }
   if (!/^0[567]\d{8}$/.test(phone)) {
     return json({ error: "رقم الهاتف غير صحيح." }, 400);
+  }
+  if (await rateLimited(env, `order-phone:${phone}`, 3, 3600)) {
+    return tooManyRequests("تم تسجيل عدة طلبات بهذا الرقم. سنتصل بك قريبا.");
   }
   if (!wilaya || municipality.length < 2) {
     return json({ error: "أدخل الولاية والبلدية." }, 400);
