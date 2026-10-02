@@ -43,6 +43,55 @@ function addCell(row, value, className) {
   return cell;
 }
 
+async function shipOrder(order, communeId) {
+  const response = await fetch(`/api/admin/orders/${order.id}/ship`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(communeId ? { communeId } : {}),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (response.ok) return data;
+  if (data.needCommune) {
+    const chosen = await chooseCommune(data);
+    if (!chosen) throw new Error("تم إلغاء الإرسال.");
+    return shipOrder(order, chosen);
+  }
+  throw new Error(data.error || "تعذر إرسال الطلب.");
+}
+
+function chooseCommune(data) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "commune-dialog";
+    const text = document.createElement("p");
+    text.textContent = data.error;
+    const select = document.createElement("select");
+    select.append(new Option("اختر البلدية", ""));
+    for (const commune of data.communes) {
+      select.append(new Option(`${commune.nameArabic || ""} · ${commune.name}`, commune.id));
+    }
+    const ok = document.createElement("button");
+    ok.type = "button";
+    ok.textContent = "إرسال";
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.textContent = "إلغاء";
+    cancel.className = "remove";
+    const finish = (value) => {
+      dialog.close();
+      dialog.remove();
+      resolve(value);
+    };
+    ok.addEventListener("click", () => select.value && finish(select.value));
+    cancel.addEventListener("click", () => finish(""));
+    dialog.addEventListener("cancel", () => finish(""));
+    dialog.append(text, select, ok, cancel);
+    document.body.append(dialog);
+    dialog.showModal();
+  });
+}
+
 function renderOrders(orders) {
   ordersBody.replaceChildren();
   if (!orders.length) {
@@ -147,7 +196,25 @@ function renderOrders(orders) {
         remove.disabled = false;
       }
     });
-    saveCell.append(save, remove);
+    const ship = document.createElement("button");
+    ship.className = "ship";
+    ship.type = "button";
+    ship.textContent = order.tracking_number ? "تم الإرسال ✓" : "إرسال إلى ZR";
+    ship.disabled = Boolean(order.tracking_number);
+    ship.addEventListener("click", async () => {
+      ship.disabled = true;
+      ordersMessage.textContent = "جار الإرسال إلى ZR Express...";
+      try {
+        const result = await shipOrder(order);
+        tracking.value = result.trackingNumber;
+        ship.textContent = "تم الإرسال ✓";
+        ordersMessage.textContent = `تم إرسال الطلب #${order.id} إلى ZR Express. رقم التتبع: ${result.trackingNumber}`;
+      } catch (error) {
+        ordersMessage.textContent = error.message;
+        ship.disabled = false;
+      }
+    });
+    saveCell.append(ship, save, remove);
     row.append(saveCell);
     ordersBody.append(row);
   }
