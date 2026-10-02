@@ -15,13 +15,13 @@ Set these Pages secrets before deploying:
 
 - `ADMIN_PASSWORD` — administrator sign-in password.
 - `SESSION_SECRET` — a long, random value used to sign administrator sessions.
-- `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` — optional; both are needed to send new-order notifications.
+- `WHATSAPP_PHONE` and `WHATSAPP_APIKEY` — optional; both are needed to send new-order WhatsApp notifications.
 
 Secrets can be added with `wrangler pages secret put SECRET_NAME --project-name green-glow`. Never put secret values in source control.
 
-## Telegram notifications
+## WhatsApp notifications
 
-Create a bot with [@BotFather](https://t.me/BotFather) using `/newbot`, then copy the bot token. Open a conversation with the new bot and send `/start`. Call Telegram's `getUpdates` endpoint using that bot token; the `message.chat.id` in the response is the chat ID to receive notifications. Add both values as Pages secrets. The bot sends the order details after the order is saved.
+Notifications use [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/). Save CallMeBot's number in your contacts, send it the activation message described on that page, and it replies with an API key. Set `WHATSAPP_PHONE` (international format, e.g. `+213550123456`) and `WHATSAPP_APIKEY` as Pages secrets.
 
 ## Tests
 

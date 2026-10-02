@@ -131,7 +131,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
     return json({ error: "لم نتمكن من تأكيد حفظ الطلب." }, 500);
   }
 
-  if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
+  if (env.WHATSAPP_PHONE && env.WHATSAPP_APIKEY) {
     const message = [
       `طلب جديد #${orderId}`,
       `الاسم: ${customerName}`,
@@ -145,22 +145,26 @@ export async function onRequestPost({ request, env, waitUntil }) {
       `ملاحظة: ${notes || "—"}`,
     ].join("\n");
 
+    const url = new URL("https://api.callmebot.com/whatsapp.php");
+    url.search = new URLSearchParams({
+      phone: env.WHATSAPP_PHONE,
+      text: message,
+      apikey: env.WHATSAPP_APIKEY,
+    });
+
     waitUntil(
-      fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: message }),
-      }).then(async (response) => {
-        const telegramResult = await response.json().catch(() => null);
-        if (!response.ok || telegramResult?.ok === false) {
-          console.error("Telegram order notification failed with status", response.status);
-        }
-      }).catch((error) => {
-        console.error("Telegram order notification failed:", error);
-      }),
+      fetch(url)
+        .then((response) => {
+          if (!response.ok) {
+            console.error("WhatsApp order notification failed with status", response.status);
+          }
+        })
+        .catch((error) => {
+          console.error("WhatsApp order notification failed:", error);
+        }),
     );
-  } else if (env.TELEGRAM_BOT_TOKEN || env.TELEGRAM_CHAT_ID) {
-    console.error("Telegram notification needs both TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.");
+  } else if (env.WHATSAPP_PHONE || env.WHATSAPP_APIKEY) {
+    console.error("WhatsApp notification needs both WHATSAPP_PHONE and WHATSAPP_APIKEY.");
   }
 
   return json({ ok: true, orderId });
