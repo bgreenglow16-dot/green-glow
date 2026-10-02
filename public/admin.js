@@ -5,7 +5,23 @@ const loginMessage = document.querySelector("#login-message");
 const ordersMessage = document.querySelector("#orders-message");
 const ordersBody = document.querySelector("#orders-body");
 const logoutButton = document.querySelector("#logout");
-const statusOptions = ["قيد التأكيد", "مؤكد", "غير مجاب", "ملغى"];
+const statusOptions = ["قيد التأكيد", "مؤكد", "لم يرد 1", "لم يرد 2", "غير مجاب", "ملغى"];
+const statusColors = {
+  "قيد التأكيد": "#e8dfc9",
+  "مؤكد": "#cfe8d3",
+  "لم يرد 1": "#fbe3a8",
+  "لم يرد 2": "#f6c58a",
+  "غير مجاب": "#f2b8b0",
+  "ملغى": "#d9d9d9",
+};
+let statusFilter = "";
+let allOrders = [];
+const filterSelect = document.querySelector("#status-filter");
+for (const value of statusOptions) filterSelect.append(new Option(value, value));
+filterSelect.addEventListener("change", () => {
+  statusFilter = filterSelect.value;
+  renderOrders(allOrders);
+});
 let refreshTimer;
 
 async function request(url, options = {}) {
@@ -38,7 +54,7 @@ function renderOrders(orders) {
     return;
   }
 
-  for (const order of orders) {
+  for (const order of orders.filter((item) => !statusFilter || item.status === statusFilter)) {
     const row = document.createElement("tr");
     const customer = document.createElement("td");
     customer.textContent = order.customer_name;
@@ -76,6 +92,8 @@ function renderOrders(orders) {
     const status = document.createElement("select");
     status.className = "status";
     status.setAttribute("aria-label", `حالة الطلب ${order.id}`);
+    const paint = () => { status.style.background = statusColors[status.value] || ""; };
+    status.addEventListener("change", paint);
     for (const value of statusOptions) {
       const option = document.createElement("option");
       option.value = value;
@@ -89,6 +107,7 @@ function renderOrders(orders) {
     tracking.maxLength = 100;
     tracking.placeholder = "رقم تتبع الشحنة";
     tracking.setAttribute("aria-label", `رقم تتبع الطلب ${order.id}`);
+    paint();
     controls.append(status, tracking);
     row.append(controls);
 
@@ -120,7 +139,8 @@ function renderOrders(orders) {
 async function loadOrders() {
   try {
     const data = await request("/api/admin/orders");
-    renderOrders(data.orders);
+    allOrders = data.orders;
+    renderOrders(allOrders);
     ordersMessage.textContent = "";
     document.querySelector("#last-updated").textContent =
       `آخر تحديث: ${new Date().toLocaleTimeString("ar-DZ")}`;

@@ -1,6 +1,6 @@
 import { json, requireAdmin } from "../../../_shared/admin.js";
 
-const statuses = new Set(["قيد التأكيد", "مؤكد", "غير مجاب", "ملغى"]);
+const statuses = new Set(["قيد التأكيد", "مؤكد", "لم يرد 1", "لم يرد 2", "غير مجاب", "ملغى"]);
 
 export async function onRequestPatch({ request, env, params }) {
   const unauthorized = await requireAdmin(request, env);
