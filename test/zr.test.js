@@ -124,7 +124,21 @@ test("shipment states: final detection and column mapping", async () => {
   }
   assert.deepEqual(
     shippingColumns({ state: { name: "livre", description: "Livré", color: "#388e3c" } }),
-    { state: "livre", desc: "Livré", color: "388e3c" },
+    { state: "livre", desc: "Livré", color: "388e3c", returned: false },
   );
+  const { outcomeStatus } = await import("../functions/_shared/zr.js");
+  assert.equal(outcomeStatus({ state: "recouvert", returned: false }), "تم التسليم");
+  assert.equal(outcomeStatus({ state: "recupere_par_fournisseur", returned: true }), "مرتجع");
+  assert.equal(outcomeStatus({ state: "confirme_au_bureau", returned: true }), "مرتجع");
+  assert.equal(outcomeStatus({ state: "vers_wilaya", returned: false }), "");
   assert.equal(shippingColumns(null).state, "missing");
+});
+
+test("customer risk levels follow the delivery and return history", async () => {
+  const { classify } = await import("../functions/_shared/risk.js");
+  assert.equal(classify({ total: 0, delivered: 0, returned: 0 }), "new");
+  assert.equal(classify({ total: 3, delivered: 3, returned: 0 }), "good");
+  assert.equal(classify({ total: 4, delivered: 3, returned: 1 }), "mixed");
+  assert.equal(classify({ total: 2, delivered: 1, returned: 1 }), "warn");
+  assert.equal(classify({ total: 3, delivered: 0, returned: 3 }), "bad");
 });

@@ -1,7 +1,16 @@
 import { json, requireAdmin } from "../../../_shared/admin.js";
 import { forbidCrossOrigin } from "../../../_shared/security.js";
 
-const statuses = new Set(["قيد التأكيد", "مؤكد", "لم يرد 1", "لم يرد 2", "غير مجاب", "ملغى"]);
+const statuses = new Set([
+  "قيد التأكيد",
+  "مؤكد",
+  "لم يرد 1",
+  "لم يرد 2",
+  "غير مجاب",
+  "تم التسليم",
+  "مرتجع",
+  "ملغى",
+]);
 
 export async function onRequestPatch({ request, env, params }) {
   const blocked = forbidCrossOrigin(request);

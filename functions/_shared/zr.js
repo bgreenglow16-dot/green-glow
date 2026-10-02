@@ -190,24 +190,39 @@ export async function findParcel(env, trackingNumber) {
   }
 }
 
+export const DELIVERED_STATES = new Set(["livre", "encaisse", "recouvert"]);
+
 export function shippingColumns(parcel) {
   if (!parcel) {
-    return { state: "missing", desc: "Colis introuvable chez ZR Express", color: "66756a" };
+    return { state: "missing", desc: "Colis introuvable chez ZR Express", color: "66756a", returned: false };
   }
   const state = parcel.state || {};
   return {
     state: String(state.name || ""),
     desc: String(state.description || ""),
     color: String(state.color || "").replace(/[^0-9a-fA-F]/g, "").slice(0, 6),
+    returned: Boolean(parcel.isReturn),
   };
+}
+
+// What the order itself should become once ZR reports the parcel's outcome.
+export function outcomeStatus(columns) {
+  if (columns.returned) return "مرتجع";
+  if (DELIVERED_STATES.has(columns.state)) return "تم التسليم";
+  return "";
 }
 
 export async function saveShipping(env, orderId, parcel) {
   const columns = shippingColumns(parcel);
+  const outcome = outcomeStatus(columns);
+  // A cancelled order stays cancelled; every other status follows the courier's result.
   await env.DB.prepare(
-    "UPDATE orders SET shipping_state = ?, shipping_desc = ?, shipping_color = ?, shipping_checked_at = ? WHERE id = ?",
+    `UPDATE orders
+     SET shipping_state = ?, shipping_desc = ?, shipping_color = ?, shipping_checked_at = ?, shipping_return = ?,
+         status = CASE WHEN ? != '' AND status != 'ملغى' THEN ? ELSE status END
+     WHERE id = ?`,
   )
-    .bind(columns.state, columns.desc, columns.color, new Date().toISOString(), orderId)
+    .bind(columns.state, columns.desc, columns.color, new Date().toISOString(), columns.returned ? 1 : 0, outcome, outcome, orderId)
     .run();
-  return columns;
+  return { ...columns, status: outcome };
 }

@@ -26,6 +26,9 @@ const ICONS = {
   phoneOff: '<path d="M5 4h4l2 5-2.500 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/><path d="M3 3l18 18"/>',
   route: '<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  shield: '<path d="M12 3l8 3v6c0 4.500-3.200 8-8 9-4.800-1-8-4.500-8-9V6z"/><path d="M8.500 12l2.500 2.500 4.500-5"/>',
+  warn: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',
+  repeat: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
   inbox: '<path d="M3 13l3-8h12l3 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
 };
 const WHATSAPP =
@@ -56,13 +59,15 @@ function el(tag, props = {}, ...children) {
   return node;
 }
 
-const statusOptions = ["قيد التأكيد", "مؤكد", "لم يرد 1", "لم يرد 2", "غير مجاب", "ملغى"];
+const statusOptions = ["قيد التأكيد", "مؤكد", "لم يرد 1", "لم يرد 2", "غير مجاب", "تم التسليم", "مرتجع", "ملغى"];
 const statusTone = {
   "قيد التأكيد": "new",
   "مؤكد": "ok",
   "لم يرد 1": "warn",
   "لم يرد 2": "orange",
   "غير مجاب": "bad",
+  "تم التسليم": "ok",
+  "مرتجع": "bad",
   "ملغى": "idle",
 };
 
@@ -150,6 +155,133 @@ async function shipOrder(order, communeId) {
   throw new Error(data.error || "تعذر إرسال الطلب.");
 }
 
+/* ---------- WhatsApp message templates (edit the wording here) ---------- */
+const WA_TEMPLATES = [
+  {
+    id: "confirm",
+    title: "تأكيد الطلب",
+    hint: "اطلب من الزبون الموافقة قبل الشحن",
+    when: (order) => order.status === "قيد التأكيد",
+    text: (order) =>
+      `السلام عليكم ${order.customer_name} 🌿\nمعكم Green Glow Natural Oil.\nوصلنا طلبكم: ${order.product}\nالتوصيل إلى: ${order.wilaya}، ${order.municipality}\nالمبلغ عند الاستلام: ${money(order.total_price)}\nهل نؤكد الطلب ونشحنه لكم؟ نرجو الرد بـ "نعم". شكرا لثقتكم.`,
+  },
+  {
+    id: "noanswer",
+    title: "لم نتمكن من الاتصال",
+    hint: "بعد محاولة اتصال لم يرد فيها",
+    when: (order) => ["لم يرد 1", "لم يرد 2", "غير مجاب"].includes(order.status),
+    text: (order) =>
+      `السلام عليكم ${order.customer_name}،\nحاولنا الاتصال بكم بخصوص طلبكم من Green Glow (${order.product}) ولم نتمكن من الوصول إليكم.\nمتى يناسبكم أن نتصل؟ أو أكدوا لنا الطلب هنا برد "نعم".`,
+  },
+  {
+    id: "shipped",
+    title: "شحنتك في الطريق",
+    hint: "يتضمن رقم التتبع",
+    show: (order) => Boolean(order.tracking_number),
+    when: (order) => Boolean(order.tracking_number) && !["تم التسليم", "مرتجع"].includes(order.status),
+    text: (order) =>
+      `السلام عليكم ${order.customer_name} 📦\nتم شحن طلبكم من Green Glow.\nرقم التتبع: ${order.tracking_number}\nسيتصل بكم المُوصِّل قريبا، نرجو إبقاء هاتفكم مفتوحا وتجهيز المبلغ: ${money(order.total_price)}.`,
+  },
+  {
+    id: "thanks",
+    title: "شكر بعد التسليم",
+    hint: "واطلب رأي الزبون",
+    when: (order) => order.status === "تم التسليم",
+    text: (order) =>
+      `شكرا لكم ${order.customer_name} 🌿\nيسعدنا أن طلبكم من Green Glow وصل إليكم. نتمنى أن تكونوا راضين عن النتيجة، ويهمنا رأيكم وصورة قبل وبعد إن أحببتم.`,
+  },
+];
+
+function openWhatsApp(order) {
+  const number = `213${String(order.phone).replace(/^0/, "")}`;
+  const dialog = el("dialog");
+  const close = () => {
+    dialogOpen = false;
+    dialog.close();
+    dialog.remove();
+  };
+  const link = (title, hint, text, best) =>
+    el(
+      "a",
+      { href: `https://wa.me/${number}${text ? `?text=${encodeURIComponent(text)}` : ""}`, target: "_blank", rel: "noopener", class: best ? "best" : "", onclick: () => setTimeout(close, 100) },
+      icon("whatsapp", "fill"),
+      el("div", {}, el("b", { text: title }), el("small", { text: hint })),
+    );
+  const templates = WA_TEMPLATES.filter((item) => !item.show || item.show(order));
+  const best = templates.find((item) => item.when(order));
+  dialog.append(
+    el("h2", { text: `رسالة إلى ${order.customer_name}` }),
+    el("p", { text: "اختر رسالة جاهزة، وتفتح في واتساب لتراجعها قبل الإرسال." }),
+    el(
+      "div",
+      { class: "wa-list" },
+      ...templates.map((item) => link(item.title + (item === best ? " (مقترحة)" : ""), item.hint, item.text(order), item === best)),
+      link("فتح المحادثة فقط", "بدون نص", "", false),
+    ),
+    el("div", { class: "btns" }, el("button", { class: "btn soft", type: "button", onclick: close }, "إغلاق")),
+  );
+  dialog.addEventListener("cancel", close);
+  dialogOpen = true;
+  document.body.append(dialog);
+  dialog.showModal();
+}
+
+/* ---------- customer risk (history of this number at ZR Express and in our store) ---------- */
+const riskCache = new Map();
+
+function riskPills(order) {
+  const pills = [];
+  const risk = riskCache.get(order.phone);
+  if (risk) {
+    const detail = `في ZR: ${risk.total} شحنة، ${risk.delivered} مُسلَّمة، ${risk.returned} مرتجعة`;
+    const make = (tone, ic, text) => {
+      const node = el("span", { class: `rpill tone-${tone}`, title: detail }, icon(ic), text);
+      return node;
+    };
+    if (risk.level === "new") pills.push(make("idle", "user", "عميل جديد"));
+    if (risk.level === "good") pills.push(make("ok", "shield", `عميل موثوق · ${risk.delivered} تسليم`));
+    if (risk.level === "mixed") pills.push(make("warn", "info", `سجل مختلط · ${risk.delivered} تسليم / ${risk.returned} مرتجع`));
+    if (risk.level === "warn") pills.push(make("orange", "warn", `انتبه: ${risk.returned} مرتجع سابق`));
+    if (risk.level === "bad") pills.push(make("bad", "warn", `خطر مرتفع: ${risk.returned} مرتجعات`));
+    if (risk.cancelled || risk.noAnswer) {
+      pills.push(make("idle", "info", `عندنا: ${risk.cancelled} ملغى، ${risk.noAnswer} بلا رد`));
+    }
+  }
+  const twin = allOrders.filter(
+    (other) => other.id !== order.id && other.phone === order.phone && Math.abs(parseDate(other.order_date) - parseDate(order.order_date)) < 48 * 3600 * 1000,
+  );
+  if (twin.length) {
+    pills.push(el("span", { class: "rpill tone-warn", title: `طلبات أخرى بنفس الرقم: ${twin.map((o) => "#" + o.id).join("، ")}` }, icon("repeat"), `طلب مكرر؟ (${twin.length})`));
+  }
+  return pills;
+}
+
+let riskBusy = false;
+async function loadRisks() {
+  if (riskBusy) return;
+  const wanted = [
+    ...new Set(
+      allOrders
+        .filter((order) => !riskCache.has(order.phone) && !["تم التسليم", "مرتجع", "ملغى"].includes(order.status) && !order.tracking_number)
+        .map((order) => order.phone),
+    ),
+  ].slice(0, 12);
+  if (!wanted.length) return;
+  riskBusy = true;
+  try {
+    const data = await request("/api/admin/risk", { method: "POST", body: JSON.stringify({ phones: wanted }) });
+    for (const [phone, risk] of Object.entries(data.risks)) riskCache.set(phone, risk);
+    for (const holder of document.querySelectorAll("[data-risk-phone]")) {
+      const order = allOrders.find((item) => item.phone === holder.dataset.riskPhone && String(item.id) === holder.dataset.riskOrder);
+      if (order) holder.replaceChildren(...riskPills(order));
+    }
+  } catch (error) {
+    console.error("Risk lookup failed:", error.message);
+  } finally {
+    riskBusy = false;
+  }
+}
+
 function chooseCommune(data) {
   return new Promise((resolve) => {
     dialogOpen = true;
@@ -185,12 +317,17 @@ function chooseCommune(data) {
 
 async function openTracking(order, onUpdate, onUnlink) {
   dialogOpen = true;
+  let statusChanged = false;
   const body = el("div", {}, el("div", { class: "tk-loading", text: "جار جلب حالة الشحنة من ZR Express..." }));
   const dialog = el("dialog", { class: "track" }, el("h2", { text: `تتبع الطلب #${order.id}` }), body);
   const close = () => {
     dialogOpen = false;
     dialog.close();
     dialog.remove();
+    if (statusChanged) {
+      renderChips();
+      renderList();
+    }
   };
   dialog.addEventListener("cancel", close);
   document.body.append(dialog);
@@ -205,6 +342,11 @@ async function openTracking(order, onUpdate, onUnlink) {
       order.shipping_desc = data.desc;
       order.shipping_color = data.color;
       order.shipping_checked_at = new Date().toISOString();
+      if (data.orderStatus && data.orderStatus !== order.status) {
+        order.status = data.orderStatus;
+        statusChanged = true;
+        renderStats();
+      }
       onUpdate();
       renderChips();
 
@@ -294,7 +436,7 @@ const needsSync = () => allOrders.some((order) => order.tracking_number && !FINA
 function renderStats() {
   const count = (...names) => allOrders.filter((order) => names.includes(order.status)).length;
   const confirmedTotal = allOrders
-    .filter((order) => order.status === "مؤكد")
+    .filter((order) => order.status === "تم التسليم")
     .reduce((sum, order) => sum + Number(order.total_price), 0);
   const cards = [
     { label: "كل الطلبات", value: allOrders.length, tone: "idle", icon: "cart" },
@@ -316,7 +458,7 @@ function renderStats() {
       "div",
       { class: "stat gold-card wide" },
       el("div", { class: "ico" }, icon("banknote")),
-      el("div", {}, el("b", { text: money(confirmedTotal) }), el("span", { text: "مبيعات الطلبات المؤكدة" })),
+      el("div", {}, el("b", { text: money(confirmedTotal) }), el("span", { text: "مبيعات الطلبات المُسلَّمة" })),
     ),
   );
 }
@@ -471,7 +613,6 @@ function orderCard(order) {
     }
   });
 
-  const waNumber = `213${String(order.phone).replace(/^0/, "")}`;
   paintStrip();
   return el(
     "article",
@@ -495,6 +636,7 @@ function orderCard(order) {
       ),
       badge,
     ),
+    el("div", { class: "pills", "data-risk-phone": order.phone, "data-risk-order": String(order.id) }, ...riskPills(order)),
     el(
       "div",
       { class: "rows" },
@@ -506,7 +648,7 @@ function orderCard(order) {
           "div",
           { class: "acts" },
           el("a", { class: "circle call", href: `tel:${order.phone}`, title: "اتصال", "aria-label": "اتصال" }, icon("phone")),
-          el("a", { class: "circle wa", href: `https://wa.me/${waNumber}`, target: "_blank", rel: "noopener", title: "واتساب", "aria-label": "واتساب" }, icon("whatsapp", "fill")),
+          el("button", { class: "circle wa", type: "button", title: "رسائل واتساب جاهزة", "aria-label": "رسائل واتساب جاهزة", onclick: () => openWhatsApp(order) }, icon("whatsapp", "fill")),
         ),
       ),
       el(
@@ -577,6 +719,7 @@ async function loadOrders({ manual = false } = {}) {
     const editing = list.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName);
     if (manual || !(editing || dialogOpen)) renderList();
     $("#last-updated").textContent = `آخر تحديث: ${new Date().toLocaleTimeString("ar-DZ")}`;
+    loadRisks();
   } catch (error) {
     if (error.message === "يلزم تسجيل الدخول للمتابعة.") showLogin();
     else toast(error.message, "err");
@@ -659,6 +802,7 @@ request("/api/admin/orders")
     renderChips();
     renderList();
     $("#last-updated").textContent = `آخر تحديث: ${new Date().toLocaleTimeString("ar-DZ")}`;
+    loadRisks();
     refreshTimer = setInterval(loadOrders, 15000);
   })
   .catch((error) => {

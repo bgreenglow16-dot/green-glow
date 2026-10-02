@@ -10,7 +10,7 @@ export async function onRequestGet({ request, env }) {
       `SELECT id, customer_name, phone, wilaya, municipality, address,
               delivery_type, product, quantity, total_price, order_date,
               status, tracking_number, notes, shipping_state, shipping_desc,
-              shipping_color, shipping_checked_at
+              shipping_color, shipping_checked_at, shipping_return, items_json
        FROM orders
        ORDER BY order_date DESC, id DESC`,
     ).all();
