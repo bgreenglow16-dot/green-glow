@@ -29,6 +29,8 @@ const ICONS = {
   shield: '<path d="M12 3l8 3v6c0 4.500-3.200 8-8 9-4.800-1-8-4.500-8-9V6z"/><path d="M8.500 12l2.500 2.500 4.500-5"/>',
   warn: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',
   repeat: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
+  chart: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+  coins: '<circle cx="9" cy="9" r="6"/><path d="M15.500 6.500A6 6 0 1 1 9.500 17"/><path d="M7 9h4"/>',
   inbox: '<path d="M3 13l3-8h12l3 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
 };
 const WHATSAPP =
@@ -312,6 +314,269 @@ function chooseCommune(data) {
     dialog.showModal();
   });
 }
+
+/* ---------- statistics tab ---------- */
+const subtotalOf = (order) => {
+  try {
+    return JSON.parse(order.items_json || "[]").reduce((sum, item) => sum + Number(item.unitPrice) * Number(item.quantity), 0);
+  } catch {
+    return Math.max(0, Number(order.total_price) - 0);
+  }
+};
+const itemsOf = (order) => {
+  try {
+    return JSON.parse(order.items_json || "[]");
+  } catch {
+    return [];
+  }
+};
+let settings = { cost_oil: 0, cost_laban: 0, cost_gift: 0, return_fee: 150 };
+let settingsLoaded = false;
+let statsPeriod = 30;
+let currentTab = "orders";
+const adKey = () => `gg_ads_${statsPeriod}`;
+const readAds = () => {
+  try {
+    return Number(localStorage.getItem(adKey()) || 0) || 0;
+  } catch {
+    return 0;
+  }
+};
+
+function periodOrders() {
+  if (!statsPeriod) return allOrders;
+  const since = Date.now() - statsPeriod * 24 * 3600 * 1000;
+  return allOrders.filter((order) => parseDate(order.order_date).getTime() >= since);
+}
+
+function computeStats(orders) {
+  const delivered = orders.filter((order) => order.status === "تم التسليم");
+  const returned = orders.filter((order) => order.status === "مرتجع");
+  const confirmed = orders.filter((order) => ["مؤكد", "تم التسليم", "مرتجع"].includes(order.status));
+  const inTransit = orders.filter((order) => order.tracking_number && !["تم التسليم", "مرتجع", "ملغى"].includes(order.status));
+  const finished = delivered.length + returned.length;
+  const costOf = (order) =>
+    itemsOf(order).reduce((sum, item) => sum + Number(item.quantity) * Number(settings[`cost_${item.id}`] || 0), 0);
+  const productRevenue = delivered.reduce((sum, order) => sum + subtotalOf(order), 0);
+  const productCost = delivered.reduce((sum, order) => sum + costOf(order), 0);
+  const returnLoss = returned.length * Number(settings.return_fee || 0);
+  return {
+    total: orders.length,
+    confirmationRate: orders.length ? confirmed.length / orders.length : null,
+    deliveryRate: finished ? delivered.length / finished : null,
+    returnRate: finished ? returned.length / finished : null,
+    delivered: delivered.length,
+    returned: returned.length,
+    collected: delivered.reduce((sum, order) => sum + Number(order.total_price), 0),
+    pendingCash: inTransit.reduce((sum, order) => sum + Number(order.total_price), 0),
+    inTransit: inTransit.length,
+    productRevenue,
+    productCost,
+    returnLoss,
+    profitBeforeAds: productRevenue - productCost - returnLoss,
+  };
+}
+
+const pct = (value) => (value === null ? "—" : `${Math.round(value * 100)}%`);
+
+function dailyBars(orders) {
+  const days = Math.min(statsPeriod || 30, 30);
+  const buckets = new Map();
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const day = new Date(Date.now() - offset * 24 * 3600 * 1000);
+    buckets.set(day.toISOString().slice(0, 10), 0);
+  }
+  for (const order of orders) {
+    const key = parseDate(order.order_date).toISOString().slice(0, 10);
+    if (buckets.has(key)) buckets.set(key, buckets.get(key) + 1);
+  }
+  const peak = Math.max(1, ...buckets.values());
+  const showLabels = days <= 14;
+  return el(
+    "div",
+    { class: "bars", role: "img", "aria-label": "عدد الطلبات يوميا" },
+    ...[...buckets].map(([key, count]) => {
+      const bar = el("i", { class: count ? "" : "zero", title: `${key}: ${count}` });
+      bar.style.height = `${Math.round((count / peak) * 100)}%`;
+      return el("div", { class: "bar" }, count ? el("b", { text: String(count) }) : null, bar, showLabels ? el("em", { text: key.slice(8) }) : null);
+    }),
+  );
+}
+
+function wilayaRank(orders) {
+  const map = new Map();
+  for (const order of orders) {
+    const row = map.get(order.wilaya) || { total: 0, delivered: 0, returned: 0 };
+    row.total += 1;
+    if (order.status === "تم التسليم") row.delivered += 1;
+    if (order.status === "مرتجع") row.returned += 1;
+    map.set(order.wilaya, row);
+  }
+  const rows = [...map].sort((a, b) => b[1].total - a[1].total).slice(0, 6);
+  const peak = Math.max(1, ...rows.map(([, row]) => row.total));
+  if (!rows.length) return el("p", { class: "hint", text: "لا توجد بيانات في هذه الفترة." });
+  return el(
+    "div",
+    { class: "rank" },
+    ...rows.map(([name, row]) => {
+      const meter = el("div", { class: "meter" }, el("i", {}));
+      meter.firstChild.style.width = `${(row.total / peak) * 100}%`;
+      const done = row.delivered + row.returned;
+      return el(
+        "div",
+        {},
+        el("div", { class: "line" }, el("b", { text: name }), el("span", { text: `${row.total} طلب` })),
+        meter,
+        done ? el("small", { text: `مرتجع ${Math.round((row.returned / done) * 100)}% من ${done} شحنة منتهية` }) : null,
+      );
+    }),
+  );
+}
+
+function productSplit(orders) {
+  const totals = new Map();
+  for (const order of orders.filter((item) => item.status === "تم التسليم")) {
+    for (const item of itemsOf(order)) totals.set(item.name, (totals.get(item.name) || 0) + Number(item.quantity));
+  }
+  if (!totals.size) return el("p", { class: "hint", text: "ستظهر الكميات المُسلَّمة هنا." });
+  return el(
+    "div",
+    { class: "rank" },
+    ...[...totals].sort((a, b) => b[1] - a[1]).map(([name, count]) => el("div", { class: "line" }, el("span", { text: name }), el("b", { text: `${count} قطعة` }))),
+  );
+}
+
+function renderStatsView() {
+  const host = $("#view-stats");
+  const orders = periodOrders();
+  const stats = computeStats(orders);
+  const ads = readAds();
+  const net = stats.profitBeforeAds - ads;
+  const costsMissing = !Number(settings.cost_oil) && !Number(settings.cost_laban);
+
+  const periodButtons = [[7, "7 أيام"], [30, "30 يوما"], [90, "90 يوما"], [0, "كل الفترة"]].map(([days, label]) =>
+    el(
+      "button",
+      {
+        class: `chip${statsPeriod === days ? " on" : ""}`,
+        type: "button",
+        onclick: () => {
+          statsPeriod = days;
+          renderStatsView();
+        },
+      },
+      label,
+    ),
+  );
+
+  const kpi = (label, value, note, extra = "") => el("div", { class: `kpi ${extra}` }, el("span", { text: label }), el("b", { text: value }), note ? el("small", { text: note }) : null);
+
+  const inputs = {};
+  const field = (key, label) => {
+    const input = el("input", { type: "number", min: "0", step: "1", inputmode: "numeric", value: String(settings[key] || 0) });
+    input.value = String(settings[key] || 0);
+    inputs[key] = input;
+    return el("label", {}, label, input);
+  };
+  const adsInput = el("input", { type: "number", min: "0", step: "1", inputmode: "numeric", placeholder: "0" });
+  adsInput.value = ads ? String(ads) : "";
+  adsInput.addEventListener("change", () => {
+    try {
+      localStorage.setItem(adKey(), String(Number(adsInput.value) || 0));
+    } catch {
+      /* private mode: the value simply is not remembered */
+    }
+    renderStatsView();
+  });
+  const saveButton = el("button", { class: "btn dark sm", type: "button" }, icon("save"), "حفظ التكاليف");
+  saveButton.addEventListener("click", async () => {
+    saveButton.disabled = true;
+    try {
+      const body = Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, Number(input.value) || 0]));
+      const result = await request("/api/admin/settings", { method: "PUT", body: JSON.stringify({ settings: body }) });
+      settings = result.settings;
+      toast("تم حفظ التكاليف", "ok");
+      renderStatsView();
+    } catch (error) {
+      toast(error.message, "err");
+    } finally {
+      saveButton.disabled = false;
+    }
+  });
+
+  host.replaceChildren(
+    el("div", { class: "periods" }, ...periodButtons),
+    el(
+      "div",
+      { class: "kpis" },
+      kpi("الطلبات", String(stats.total), `${stats.inTransit} قيد الشحن`),
+      kpi("نسبة التأكيد", pct(stats.confirmationRate), "طلبات مؤكدة أو منتهية من الكل"),
+      kpi("نسبة التسليم", pct(stats.deliveryRate), `${stats.delivered} مُسلَّمة من ${stats.delivered + stats.returned} منتهية`),
+      kpi("نسبة المرتجع", pct(stats.returnRate), `${stats.returned} مرتجعة`),
+    ),
+    el(
+      "div",
+      { class: "kpis" },
+      kpi("المبلغ المحصَّل", money(stats.collected), "إجمالي الطلبات المُسلَّمة شاملا التوصيل"),
+      kpi("قيد التحصيل", money(stats.pendingCash), "شحنات في الطريق"),
+      kpi("ربح المنتجات قبل الإعلانات", costsMissing ? "—" : money(stats.profitBeforeAds), costsMissing ? "أدخل تكلفة القارورة أدناه" : `مبيعات ${money(stats.productRevenue)} − تكلفة ${money(stats.productCost)} − مرتجعات ${money(stats.returnLoss)}`),
+      kpi("الربح بعد الإعلانات", costsMissing ? "—" : money(net), ads ? `بعد خصم إعلانات ${money(ads)}` : "أدخل مصاريف الإعلانات أدناه", `profit${net < 0 && !costsMissing ? " neg" : ""}`),
+    ),
+    el(
+      "div",
+      { class: "stats-grid" },
+      el("div", { class: "panel" }, el("h3", {}, icon("chart"), "الطلبات يوميا"), dailyBars(orders)),
+      el("div", { class: "panel" }, el("h3", {}, icon("pin"), "أكثر الولايات طلبا"), wilayaRank(orders)),
+    ),
+    el(
+      "div",
+      { class: "stats-grid" },
+      el(
+        "div",
+        { class: "panel" },
+        el("h3", {}, icon("coins"), "التكاليف (لحساب الربح)"),
+        el("div", { class: "set-grid" }, field("cost_oil", "تكلفة قارورة الزيت (دج)"), field("cost_laban", "تكلفة علبة اللبان (دج)"), field("cost_gift", "تكلفة القارورة الصغيرة الهدية (دج)"), field("return_fee", "رسوم المرتجع لدى ZR (دج)")),
+        saveButton,
+        el("p", { class: "hint", text: "الربح = سعر المنتجات المُسلَّمة − تكلفتها − رسوم المرتجعات. رسوم التوصيل لا تُحسب لأن الزبون يدفعها ثم تُخصم لدى ZR (فهي تتعادل)." }),
+      ),
+      el(
+        "div",
+        { class: "panel" },
+        el("h3", {}, icon("box"), "المُسلَّم حسب المنتج"),
+        productSplit(orders),
+        el("h3", { style: "margin-top:18px" }, icon("banknote"), "مصاريف الإعلانات في هذه الفترة"),
+        el("div", { class: "set-grid" }, el("label", {}, "المبلغ (دج)", adsInput)),
+        el("p", { class: "hint", text: "تُحفظ على هذا الجهاز فقط." }),
+      ),
+    ),
+  );
+}
+
+async function showTab(name) {
+  currentTab = name;
+  for (const tab of document.querySelectorAll(".tab")) {
+    const on = tab.dataset.tab === name;
+    tab.classList.toggle("on", on);
+    tab.setAttribute("aria-selected", String(on));
+  }
+  $("#view-orders").hidden = name !== "orders";
+  $("#view-stats").hidden = name !== "stats";
+  if (name === "stats") {
+    if (!settingsLoaded) {
+      try {
+        settings = (await request("/api/admin/settings")).settings;
+        settingsLoaded = true;
+      } catch (error) {
+        toast(error.message, "err");
+      }
+    }
+    renderStatsView();
+  }
+}
+$("#tabs").addEventListener("click", (event) => {
+  const tab = event.target.closest(".tab");
+  if (tab) showTab(tab.dataset.tab);
+});
 
 /* ---------- stats, chips, list ---------- */
 
@@ -715,6 +980,7 @@ async function loadOrders({ manual = false } = {}) {
     allOrders = data.orders;
     renderStats();
     renderChips();
+    if (currentTab === "stats" && !dialogOpen && !document.activeElement?.closest("#view-stats")) renderStatsView();
     // Do not wipe what the manager is typing or a dialog in progress during auto-refresh.
     const editing = list.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName);
     if (manual || !(editing || dialogOpen)) renderList();

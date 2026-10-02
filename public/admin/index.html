@@ -142,6 +142,40 @@
     .btns{display:flex;gap:8px}
     .btns .btn:not(.icon){flex:1}
 
+    .tabs{display:inline-flex;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:4px;gap:4px;margin-bottom:20px}
+    .tab{border:0;background:transparent;border-radius:12px;height:42px;padding:0 22px;font-weight:600;color:var(--mut);transition:all .2s}
+    .tab.on{background:var(--bg2);color:var(--iv)}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 18px 30px -28px rgba(11,31,23,.5)}
+    .panel h3{font:600 16px var(--hd);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+    .panel h3 svg{width:20px;height:20px;color:var(--g6)}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+    .kpi{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px}
+    .kpi span{display:block;color:var(--mut);font-size:13px}
+    .kpi b{display:block;font:600 24px/1.2 var(--hd);margin-top:4px;font-variant-numeric:tabular-nums}
+    .kpi small{display:block;color:var(--mut);font-size:12px;margin-top:2px}
+    .kpi.profit{background:linear-gradient(135deg,var(--bg),var(--g6));color:var(--iv);border-color:transparent}
+    .kpi.profit span,.kpi.profit small{color:#b9cabd}
+    .kpi.neg b{color:#ffb4a8}
+    .stats-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px}
+    .bars{display:flex;align-items:flex-end;gap:6px;height:170px;padding-top:8px}
+    .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:0;height:100%}
+    .bar i{display:block;width:100%;max-width:26px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--gold),#b9953f);min-height:3px;transition:height .5s var(--ease)}
+    .bar i.zero{background:var(--line)}
+    .bar em{font-style:normal;font-size:10.5px;color:var(--mut);white-space:nowrap}
+    .bar b{font-size:11px;font-weight:700}
+    .rank{display:grid;gap:10px}
+    .rank div{display:grid;gap:4px}
+    .rank .line{display:flex;justify-content:space-between;font-size:14px}
+    .rank small{color:var(--mut);font-size:12px}
+    .meter{height:8px;border-radius:99px;background:var(--iv2);overflow:hidden}
+    .meter i{display:block;height:100%;background:var(--g6);border-radius:99px}
+    .periods{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+    .set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin-bottom:14px}
+    .set-grid label{display:grid;gap:6px;font-size:13px;color:var(--mut);min-width:0}
+    .stats-grid>*,.kpis>*,.panel{min-width:0}
+    .set-grid input{width:100%;min-width:0;height:46px;border-radius:13px;border:1.5px solid var(--line);background:#fff;padding:0 14px;color:var(--ink);font-weight:600}
+    .set-grid input:focus{outline:0;border-color:var(--g6);box-shadow:0 0 0 4px rgba(30,74,55,.1)}
+    .hint{color:var(--mut);font-size:13px;line-height:1.7;margin:10px 0 0}
     .pills{display:flex;flex-wrap:wrap;gap:6px}
     .pills:empty{display:none}
     .rpill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:999px;font-size:12.5px;font-weight:600}
@@ -205,7 +239,7 @@
     dialog select{width:100%;height:48px;border-radius:13px;border:1.5px solid var(--line);padding:0 12px;background:#fff;margin-bottom:16px}
     dialog .btns{margin-top:4px}
 
-    @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}.stats-grid{grid-template-columns:1fr}}
     @media(max-width:700px){
       main{padding:16px 14px 90px}.top-in{padding-inline:14px}
       .stats{grid-template-columns:1fr 1fr;gap:10px}.stat{padding:14px;gap:10px;flex-direction:column;align-items:flex-start}.stat b{font-size:21px}
@@ -250,6 +284,12 @@
     </section>
 
     <section id="orders-panel" hidden>
+      <nav class="tabs" id="tabs" role="tablist">
+        <button class="tab on" type="button" role="tab" data-tab="orders" aria-selected="true">الطلبات</button>
+        <button class="tab" type="button" role="tab" data-tab="stats" aria-selected="false">الإحصائيات</button>
+      </nav>
+      <div id="view-stats" hidden></div>
+      <div id="view-orders">
       <div class="stats" id="stats"></div>
       <div class="toolbar">
         <div class="search" id="search-wrap"><input id="search" type="search" placeholder="ابحث بالاسم أو الهاتف أو الولاية أو رقم التتبع" aria-label="بحث"></div>
@@ -258,6 +298,7 @@
       <div class="chips" id="chips" role="tablist" aria-label="تصفية حسب الحالة"></div>
       <div class="grid" id="orders-list"></div>
       <div class="empty" id="empty" hidden></div>
+      </div>
     </section>
   </main>
 
