@@ -142,6 +142,31 @@
     .btns{display:flex;gap:8px}
     .btns .btn:not(.icon){flex:1}
 
+    .tools{display:flex;align-items:center;gap:14px}
+    .ship-strip{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:16px;padding:10px 12px;background:#fff}
+    .ship-strip .sdot{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 4px rgba(0,0,0,.06)}
+    .ship-strip .stext{flex:1;min-width:0}
+    .ship-strip b{display:block;font-size:14.5px;font-weight:600}
+    .ship-strip small{display:block;color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ship-strip .btn{height:38px;padding:0 13px;font-size:13.5px}
+    dialog.track{width:min(500px,94vw);max-height:88vh;overflow:auto}
+    .tk-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .tk-head .sdot{width:16px;height:16px;border-radius:50%;flex:none}
+    .tk-head b{display:block;font:600 18px var(--hd)}
+    .tk-head small{color:var(--mut)}
+    .tk-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+    .tk-meta div{background:var(--iv);border-radius:14px;padding:10px 14px;font-size:13px;color:var(--mut)}
+    .tk-meta b{display:block;color:var(--ink);font-size:15px;margin-top:2px}
+    .tk-code{direction:ltr;text-align:right;font-family:var(--hd);letter-spacing:.04em}
+    .timeline{list-style:none;margin:0 0 6px;padding:0;position:relative}
+    .timeline li{position:relative;padding:0 26px 18px 0}
+    .timeline li::before{content:"";position:absolute;right:6px;top:18px;bottom:-2px;width:2px;background:var(--line)}
+    .timeline li:last-child::before{display:none}
+    .timeline .dot{position:absolute;right:0;top:5px;width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 4px #fff}
+    .timeline b{display:block;font-size:14.5px}
+    .timeline small{display:block;color:var(--mut);font-size:12.5px}
+    .timeline em{display:block;font-style:normal;font-size:13px;margin-top:3px;color:#6b5314}
+    .tk-loading{padding:30px 0;text-align:center;color:var(--mut)}
     .empty{text-align:center;padding:70px 20px;color:var(--mut)}
     .empty svg{width:56px;height:56px;color:var(--gold);margin-bottom:10px;stroke-width:1.4}
     .empty b{display:block;color:var(--ink);font:600 18px var(--hd);margin-bottom:4px}
@@ -166,6 +191,7 @@
       .grid{grid-template-columns:1fr}
       .brand small{display:none}
       .updated{display:none}
+      .tools{width:100%}.tools .btn{width:100%}
       .search{max-width:none}
     }
     @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -205,7 +231,7 @@
       <div class="stats" id="stats"></div>
       <div class="toolbar">
         <div class="search" id="search-wrap"><input id="search" type="search" placeholder="ابحث بالاسم أو الهاتف أو الولاية أو رقم التتبع" aria-label="بحث"></div>
-        <div class="updated"><i></i><span id="last-updated">جار التحميل...</span></div>
+        <div class="tools"><button id="sync" class="btn soft sm" type="button"></button><div class="updated"><i></i><span id="last-updated">جار التحميل...</span></div></div>
       </div>
       <div class="chips" id="chips" role="tablist" aria-label="تصفية حسب الحالة"></div>
       <div class="grid" id="orders-list"></div>

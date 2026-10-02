@@ -1,0 +1,4 @@
+ALTER TABLE orders ADD COLUMN shipping_state TEXT NOT NULL DEFAULT '';
+ALTER TABLE orders ADD COLUMN shipping_desc TEXT NOT NULL DEFAULT '';
+ALTER TABLE orders ADD COLUMN shipping_color TEXT NOT NULL DEFAULT '';
+ALTER TABLE orders ADD COLUMN shipping_checked_at TEXT NOT NULL DEFAULT '';

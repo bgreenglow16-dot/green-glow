@@ -24,6 +24,8 @@ const ICONS = {
   cart: '<path d="M3 4h2l2.500 11h11L21 7H6"/><circle cx="9" cy="20" r="1.500"/><circle cx="17" cy="20" r="1.500"/>',
   banknote: '<rect x="2" y="6" width="20" height="12" rx="2.500"/><circle cx="12" cy="12" r="2.500"/><path d="M6 12h.01M18 12h.01"/>',
   phoneOff: '<path d="M5 4h4l2 5-2.500 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/><path d="M3 3l18 18"/>',
+  route: '<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   inbox: '<path d="M3 13l3-8h12l3 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
 };
 const WHATSAPP =
@@ -64,6 +66,26 @@ const statusTone = {
   "ملغى": "idle",
 };
 
+const SHIP_LABELS = {
+  commande_recue: "تم استلام الطلب",
+  confirme_au_bureau: "تم التأكيد في مكتب ZR",
+  dispatch: "في الطريق (نفس الولاية)",
+  vers_wilaya: "في الطريق إلى ولاية أخرى",
+  sortie_en_livraison: "خرج للتوصيل",
+  livre: "تم التسليم",
+  encaisse: "تم تحصيل المبلغ",
+  recouvert: "تمت تسوية المبلغ",
+  recupere_par_fournisseur: "استرجعته (مرتجع)",
+  missing: "الشحنة غير موجودة لدى ZR",
+};
+const FINAL_SHIP = new Set(["livre", "encaisse", "recouvert", "recupere_par_fournisseur", "missing"]);
+const shipLabel = (name, desc) => SHIP_LABELS[name] || desc || name || "في انتظار التحديث";
+const hexColor = (value) => (/^[0-9a-f]{6}$/i.test(value || "") ? `#${value}` : "#8a968d");
+const timeText = (value) => {
+  const date = new Date(/Z|[+-]\d\d:?\d\d$/.test(String(value)) ? value : `${value}Z`);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("ar-DZ", { dateStyle: "medium", timeStyle: "short" });
+};
+
 const loginPanel = $("#login-panel");
 const ordersPanel = $("#orders-panel");
 const loginForm = $("#login-form");
@@ -75,6 +97,7 @@ const list = $("#orders-list");
 $("#pw-field").prepend(icon("lock"));
 $("#search-wrap").prepend(icon("search"));
 refreshButton.append(icon("refresh"));
+$("#sync").append(icon("route"), "تحديث حالة الشحنات");
 logoutButton.append(icon("logout"));
 
 let allOrders = [];
@@ -160,6 +183,114 @@ function chooseCommune(data) {
 
 /* ---------- stats, chips, list ---------- */
 
+async function openTracking(order, onUpdate, onUnlink) {
+  dialogOpen = true;
+  const body = el("div", {}, el("div", { class: "tk-loading", text: "جار جلب حالة الشحنة من ZR Express..." }));
+  const dialog = el("dialog", { class: "track" }, el("h2", { text: `تتبع الطلب #${order.id}` }), body);
+  const close = () => {
+    dialogOpen = false;
+    dialog.close();
+    dialog.remove();
+  };
+  dialog.addEventListener("cancel", close);
+  document.body.append(dialog);
+  dialog.showModal();
+
+  const footer = (...buttons) => el("div", { class: "btns" }, ...buttons, el("button", { class: "btn soft", type: "button", onclick: close }, "إغلاق"));
+  const load = async () => {
+    body.replaceChildren(el("div", { class: "tk-loading", text: "جار جلب حالة الشحنة من ZR Express..." }));
+    try {
+      const data = await request(`/api/admin/orders/${order.id}/track`);
+      order.shipping_state = data.state;
+      order.shipping_desc = data.desc;
+      order.shipping_color = data.color;
+      order.shipping_checked_at = new Date().toISOString();
+      onUpdate();
+      renderChips();
+
+      if (data.missing) {
+        body.replaceChildren(
+          el("p", {}, "لم تعد الشحنة ", el("bdi", { dir: "ltr", text: data.trackingNumber }), " موجودة لدى ZR Express (ربما حُذفت من حسابك هناك). يمكنك فك الربط وإعادة إرسال الطلب."),
+          footer(
+            el(
+              "button",
+              {
+                class: "btn gold",
+                type: "button",
+                onclick: async (event) => {
+                  event.currentTarget.disabled = true;
+                  try {
+                    await request(`/api/admin/orders/${order.id}`, { method: "PATCH", body: JSON.stringify({ status: order.status, trackingNumber: "" }) });
+                    order.tracking_number = "";
+                    order.shipping_state = order.shipping_desc = order.shipping_color = order.shipping_checked_at = "";
+                    close();
+                    onUnlink();
+                    toast("تم فك الربط. يمكنك الآن إرسال الطلب من جديد.", "ok");
+                  } catch (error) {
+                    toast(error.message, "err");
+                  }
+                },
+              },
+              "فك الربط وإعادة الإرسال",
+            ),
+          ),
+        );
+        return;
+      }
+
+      const dot = el("span", { class: "sdot" });
+      dot.style.background = hexColor(data.color);
+      const items = data.history.map((entry) => {
+        const mark = el("span", { class: "dot" });
+        mark.style.background = hexColor(entry.color);
+        return el(
+          "li",
+          {},
+          mark,
+          el("b", { text: shipLabel(entry.state, entry.description) }),
+          el("small", { text: [timeText(entry.at), entry.place].filter(Boolean).join(" · ") }),
+          (entry.comment || entry.reasons.length) ? el("em", { text: [entry.comment, ...entry.reasons].filter(Boolean).join(" · ") }) : null,
+        );
+      });
+      body.replaceChildren(
+        el("div", { class: "tk-head" }, dot, el("div", {}, el("b", { text: shipLabel(data.state, data.desc) }), el("small", { text: data.desc && SHIP_LABELS[data.state] ? data.desc : timeText(data.updatedAt) }))),
+        el(
+          "div",
+          { class: "tk-meta" },
+          el("div", {}, "رقم التتبع", el("b", { class: "tk-code", text: data.trackingNumber })),
+          el("div", {}, "آخر تحديث", el("b", { text: timeText(data.updatedAt) || "—" })),
+          data.courier ? el("div", {}, "المُوصِّل", el("b", {}, data.courier.name, data.courier.name && data.courier.phone ? " · " : "", data.courier.phone ? el("bdi", { dir: "ltr", text: data.courier.phone }) : null)) : null,
+          data.amount !== null ? el("div", {}, "المبلغ", el("b", { text: money(data.amount) })) : null,
+        ),
+        items.length ? el("ul", { class: "timeline" }, items) : el("p", { class: "muted", text: "لا يوجد سجل تحركات بعد." }),
+        footer(el("button", { class: "btn dark", type: "button", onclick: load }, icon("refresh"), "تحديث")),
+      );
+    } catch (error) {
+      body.replaceChildren(el("p", { text: error.message }), footer(el("button", { class: "btn dark", type: "button", onclick: load }, icon("refresh"), "إعادة المحاولة")));
+    }
+  };
+  load();
+}
+
+async function syncShipments({ silent = false } = {}) {
+  const button = $("#sync");
+  button.disabled = true;
+  if (!silent) toast("جار تحديث حالة الشحنات من ZR Express...");
+  try {
+    const result = await request("/api/admin/orders/sync", { method: "POST", body: "{}" });
+    await loadOrders({ manual: !silent });
+    if (!silent) {
+      toast(result.failed ? `تم فحص ${result.checked} شحنة وتعذر ${result.failed}. ${result.error}` : result.checked ? `تم تحديث ${result.checked} شحنة.` : "لا توجد شحنات تحتاج إلى تحديث.", result.failed ? "err" : "ok");
+    }
+  } catch (error) {
+    if (!silent) toast(error.message, "err");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+const needsSync = () => allOrders.some((order) => order.tracking_number && !FINAL_SHIP.has(order.shipping_state));
+
 function renderStats() {
   const count = (...names) => allOrders.filter((order) => names.includes(order.status)).length;
   const confirmedTotal = allOrders
@@ -191,10 +322,14 @@ function renderStats() {
 }
 
 function renderChips() {
-  const chips = [["", "الكل"], ...statusOptions.map((value) => [value, value])];
+  const chips = [["", "الكل"], ["__shipped", "مرسلة إلى ZR"], ...statusOptions.map((value) => [value, value])];
   $("#chips").replaceChildren(
     ...chips.map(([value, label]) => {
-      const total = value ? allOrders.filter((order) => order.status === value).length : allOrders.length;
+      const total = !value
+        ? allOrders.length
+        : value === "__shipped"
+          ? allOrders.filter((order) => order.tracking_number).length
+          : allOrders.filter((order) => order.status === value).length;
       return el(
         "button",
         {
@@ -216,7 +351,9 @@ function renderChips() {
 }
 
 function matches(order) {
-  if (statusFilter && order.status !== statusFilter) return false;
+  if (statusFilter === "__shipped") {
+    if (!order.tracking_number) return false;
+  } else if (statusFilter && order.status !== statusFilter) return false;
   const needle = searchText.trim().toLowerCase();
   if (!needle) return true;
   return [order.customer_name, order.phone, order.wilaya, order.municipality, order.tracking_number, order.product, String(order.id)]
@@ -273,6 +410,25 @@ function orderCard(order) {
     }
   });
 
+  const strip = el("div", { class: "ship-strip" });
+  const paintStrip = () => {
+    strip.hidden = !order.tracking_number;
+    if (!order.tracking_number) return;
+    const dot = el("span", { class: "sdot" });
+    dot.style.background = hexColor(order.shipping_color);
+    const checked = order.shipping_checked_at ? `آخر فحص: ${timeText(order.shipping_checked_at)}` : "لم تُفحص بعد";
+    strip.replaceChildren(
+      dot,
+      el("div", { class: "stext" }, el("b", { text: shipLabel(order.shipping_state, order.shipping_desc) }), el("small", { text: checked })),
+      el("button", { class: "btn soft", type: "button", onclick: () => openTracking(order, paintStrip, afterUnlink) }, icon("route"), "تتبع"),
+    );
+  };
+  const afterUnlink = () => {
+    tracking.value = "";
+    renderList();
+    renderStats();
+    renderChips();
+  };
   const shipped = Boolean(order.tracking_number);
   const ship = el(
     "button",
@@ -286,7 +442,9 @@ function orderCard(order) {
     try {
       const result = await shipOrder(order, undefined);
       order.tracking_number = result.trackingNumber;
+      order.shipping_state = order.shipping_state || "commande_recue";
       tracking.value = result.trackingNumber;
+      paintStrip();
       ship.className = "btn sm done";
       ship.replaceChildren(icon("check"), "تم الإرسال");
       toast(`تم إرسال الطلب #${order.id}. رقم التتبع: ${result.trackingNumber}`, "ok");
@@ -314,6 +472,7 @@ function orderCard(order) {
   });
 
   const waNumber = `213${String(order.phone).replace(/^0/, "")}`;
+  paintStrip();
   return el(
     "article",
     { class: `order${freshIds.has(order.id) ? " fresh" : ""}` },
@@ -331,7 +490,7 @@ function orderCard(order) {
           `#${order.id}`,
           "·",
           Number.isNaN(created.getTime()) ? "" : created.toLocaleString("ar-DZ", { dateStyle: "medium", timeStyle: "short" }),
-          freshIds.has(order.id) && el("span", { class: "new-tag", text: "جديد" }),
+          freshIds.has(order.id) ? el("span", { class: "new-tag", text: "جديد" }) : null,
         ),
       ),
       badge,
@@ -358,14 +517,15 @@ function orderCard(order) {
           "div",
           {},
           el("b", { text: `${order.wilaya}، ${order.municipality}` }),
-          order.address && el("small", { text: order.address }),
+          order.address ? el("small", { text: order.address }) : null,
           el("span", { class: "pill" }, icon(isDesk ? "building" : "home"), isDesk ? "إلى المكتب" : "إلى المنزل"),
         ),
       ),
       el("div", { class: "row" }, icon("box"), el("div", {}, el("span", { text: order.product }))),
     ),
     el("div", { class: "price-row" }, el("span", { text: "المبلغ عند الاستلام" }), el("b", { text: money(order.total_price) })),
-    order.notes && el("div", { class: "note" }, icon("note"), el("span", { text: order.notes })),
+    strip,
+    order.notes ? el("div", { class: "note" }, icon("note"), el("span", { text: order.notes })) : null,
     el(
       "div",
       { class: "o-foot" },
@@ -473,6 +633,10 @@ $("#search").addEventListener("input", (event) => {
 });
 
 refreshButton.addEventListener("click", () => loadOrders({ manual: true }));
+$("#sync").addEventListener("click", () => syncShipments());
+// Keep shipment states fresh without the manager asking: once on open, then every 10 minutes.
+setTimeout(() => needsSync() && syncShipments({ silent: true }), 3000);
+setInterval(() => needsSync() && !document.hidden && syncShipments({ silent: true }), 10 * 60 * 1000);
 logoutButton.addEventListener("click", async () => {
   try {
     await request("/api/admin/logout", { method: "POST", body: "{}" });

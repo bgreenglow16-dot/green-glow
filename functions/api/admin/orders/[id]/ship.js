@@ -8,6 +8,7 @@ import {
   loadTerritories,
   matchCommune,
   toInternationalPhone,
+  saveShipping,
   zrRequest,
 } from "../../../../_shared/zr.js";
 
@@ -127,6 +128,9 @@ export async function onRequestPost({ request, env, params }) {
     await env.DB.prepare("UPDATE orders SET tracking_number = ? WHERE id = ?")
       .bind(trackingNumber, id)
       .run();
+    await saveShipping(env, id, created).catch((error) =>
+      console.error("Could not store initial shipping state:", error?.message),
+    );
     return json({ ok: true, trackingNumber, parcelId: parcel.id });
   } catch (error) {
     if (error instanceof ZrError) return json({ error: error.message }, error.status);

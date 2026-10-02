@@ -113,3 +113,18 @@ test("order delivery price comes from ZR rates and unserved wilayas are refused"
     globalThis.fetch = realFetch;
   }
 });
+
+test("shipment states: final detection and column mapping", async () => {
+  const { isFinalState, shippingColumns } = await import("../functions/_shared/zr.js");
+  for (const name of ["livre", "encaisse", "recouvert", "recupere_par_fournisseur", "missing", "colis_annule"]) {
+    assert.equal(isFinalState(name), true, name);
+  }
+  for (const name of ["", "commande_recue", "vers_wilaya", "sortie_en_livraison"]) {
+    assert.equal(isFinalState(name), false, name);
+  }
+  assert.deepEqual(
+    shippingColumns({ state: { name: "livre", description: "Livré", color: "#388e3c" } }),
+    { state: "livre", desc: "Livré", color: "388e3c" },
+  );
+  assert.equal(shippingColumns(null).state, "missing");
+});

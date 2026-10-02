@@ -42,6 +42,13 @@ export async function onRequestPatch({ request, env, params }) {
     if (result.meta?.changes !== 1) {
       return json({ error: "لم يتم العثور على الطلب." }, 404);
     }
+    if (trackingNumber === "") {
+      await env.DB.prepare(
+        "UPDATE orders SET shipping_state = '', shipping_desc = '', shipping_color = '', shipping_checked_at = '' WHERE id = ?",
+      )
+        .bind(id)
+        .run();
+    }
     return json({ ok: true });
   } catch (error) {
     console.error("Failed to update order in D1:", error);

@@ -9,7 +9,8 @@ export async function onRequestGet({ request, env }) {
     const { results } = await env.DB.prepare(
       `SELECT id, customer_name, phone, wilaya, municipality, address,
               delivery_type, product, quantity, total_price, order_date,
-              status, tracking_number, notes
+              status, tracking_number, notes, shipping_state, shipping_desc,
+              shipping_color, shipping_checked_at
        FROM orders
        ORDER BY order_date DESC, id DESC`,
     ).all();

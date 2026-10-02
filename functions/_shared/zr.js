@@ -48,7 +48,9 @@ export async function zrRequest(env, path, { method = "GET", body } = {}) {
     const source = data?.errors ?? data?.detail ?? data?.message ?? data?.title;
     const detail = source ? JSON.stringify(source).slice(0, 300) : `HTTP ${response.status}`;
     console.error("ZR Express request failed:", method, path, response.status, text.slice(0, 500));
-    throw new ZrError(`رفضت ZR Express الطلب: ${detail}`, 502);
+    const failure = new ZrError(`رفضت ZR Express الطلب: ${detail}`, 502);
+    failure.upstream = response.status;
+    throw failure;
   }
   return data;
 }
@@ -170,4 +172,42 @@ export async function getLocations(env) {
 export function deliveryPriceFor(wilaya, commune, type) {
   const key = type === "home" ? "home" : "desk";
   return commune?.rates?.[key] ?? wilaya?.rates?.[key] ?? null;
+}
+
+// States after which nothing more will happen to a parcel, so we stop polling it.
+const FINAL_STATES = new Set(["livre", "encaisse", "recouvert", "recupere_par_fournisseur", "missing"]);
+
+export function isFinalState(name) {
+  return FINAL_STATES.has(name) || /annul|cancel/i.test(name || "");
+}
+
+export async function findParcel(env, trackingNumber) {
+  try {
+    return await zrRequest(env, `/parcels/${encodeURIComponent(trackingNumber)}`);
+  } catch (error) {
+    if (error instanceof ZrError && error.upstream === 404) return null;
+    throw error;
+  }
+}
+
+export function shippingColumns(parcel) {
+  if (!parcel) {
+    return { state: "missing", desc: "Colis introuvable chez ZR Express", color: "66756a" };
+  }
+  const state = parcel.state || {};
+  return {
+    state: String(state.name || ""),
+    desc: String(state.description || ""),
+    color: String(state.color || "").replace(/[^0-9a-fA-F]/g, "").slice(0, 6),
+  };
+}
+
+export async function saveShipping(env, orderId, parcel) {
+  const columns = shippingColumns(parcel);
+  await env.DB.prepare(
+    "UPDATE orders SET shipping_state = ?, shipping_desc = ?, shipping_color = ?, shipping_checked_at = ? WHERE id = ?",
+  )
+    .bind(columns.state, columns.desc, columns.color, new Date().toISOString(), orderId)
+    .run();
+  return columns;
 }
