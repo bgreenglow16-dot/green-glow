@@ -45,3 +45,25 @@ export async function onRequestPatch({ request, env, params }) {
     return json({ error: "تعذر تحديث الطلب." }, 500);
   }
 }
+
+export async function onRequestDelete({ request, env, params }) {
+  const unauthorized = await requireAdmin(request, env);
+  if (unauthorized) return unauthorized;
+  if (!env.DB) return json({ error: "قاعدة الطلبات غير مهيأة." }, 503);
+
+  const id = Number(params.id);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    return json({ error: "رقم الطلب غير صحيح." }, 400);
+  }
+
+  try {
+    const result = await env.DB.prepare("DELETE FROM orders WHERE id = ?").bind(id).run();
+    if (result.meta?.changes !== 1) {
+      return json({ error: "لم يتم العثور على الطلب." }, 404);
+    }
+    return json({ ok: true });
+  } catch (error) {
+    console.error("Failed to delete order from D1:", error);
+    return json({ error: "تعذر حذف الطلب." }, 500);
+  }
+}

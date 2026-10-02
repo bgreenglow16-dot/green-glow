@@ -130,7 +130,24 @@ function renderOrders(orders) {
         save.disabled = false;
       }
     });
-    saveCell.append(save);
+    const remove = document.createElement("button");
+    remove.className = "remove";
+    remove.type = "button";
+    remove.textContent = "حذف";
+    remove.addEventListener("click", async () => {
+      if (!confirm(`حذف طلب ${order.customer_name} (#${order.id}) نهائيا؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
+      remove.disabled = true;
+      try {
+        await request(`/api/admin/orders/${order.id}`, { method: "DELETE" });
+        row.remove();
+        allOrders = allOrders.filter((item) => item.id !== order.id);
+        ordersMessage.textContent = "تم حذف الطلب.";
+      } catch (error) {
+        ordersMessage.textContent = error.message;
+        remove.disabled = false;
+      }
+    });
+    saveCell.append(save, remove);
     row.append(saveCell);
     ordersBody.append(row);
   }
