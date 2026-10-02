@@ -80,6 +80,9 @@ orderForm.addEventListener(
         `البلدية: ${value("cm")}`,
         `العنوان: ${value("ad") || "-"}`,
         `الطلب: ${items.map((item) => `${item.id === "oil" ? "زيت ذكر الثوم" : "لبان ذكر الثوم"} × ${item.quantity}`).join("، ")}`,
+        ...(items.some((item) => item.id === "oil" && item.quantity >= 2)
+          ? [`هدية: قارورة صغيرة × ${Math.floor(items.find((item) => item.id === "oil").quantity / 2)}`]
+          : []),
       ].join(String.fromCharCode(10));
       const waLink = document.querySelector("#wa");
       waLink.href = `https://wa.me/${CFG.sellerWA}?text=${encodeURIComponent(waText)}`;

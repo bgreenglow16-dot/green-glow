@@ -63,6 +63,26 @@ test("order total and product details are calculated on the server", async () =>
   assert.deepEqual(JSON.parse(values[8]).map((item) => item.id), ["oil", "gift"]);
 });
 
+test("every two oil bottles add one free small bottle", async () => {
+  for (const [oil, gifts] of [[1, 0], [2, 1], [3, 1], [4, 2], [6, 3]]) {
+    const DB = createDatabaseStub();
+    const response = await createOrder({
+      request: new Request("https://green-glow.pages.dev/api/orders", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(validOrder({ items: [{ id: "oil", quantity: oil }] })),
+      }),
+      env: { DB },
+      waitUntil() {},
+    });
+    assert.equal(response.status, 200);
+    const items = JSON.parse(DB.calls[0].values[8]);
+    const gift = items.find((item) => item.id === "gift");
+    assert.equal(gift?.quantity ?? 0, gifts, `${oil} oil bottles`);
+    assert.equal(DB.calls[0].values[9], oil * 2500 + 600);
+  }
+});
+
 test("invalid orders are rejected before a database write", async () => {
   const DB = createDatabaseStub();
   const response = await createOrder({

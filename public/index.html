@@ -297,7 +297,7 @@ header{transition:none}header.hide{transform:none}
 <section id="products"><div class="wrap">
 <div class="sh"><div class="rv"><div class="tag" style="color:var(--g6)">المجموعة</div><h2>منتجان من قلب الطبيعة <span class="lat">Collection</span></h2></div><p class="rv" style="--d:.1s">كل منتج محضّر من مكونات بسيطة ومعروفة. اختر ما يناسبك وأضفه إلى طلبك بنقرة.</p></div>
 <div class="stack" id="stack"></div>
-<div class="offer rv"><div class="og">🎁</div><div><div class="tag" style="color:var(--bg)">عرض خاص على الزيت</div><h3>خذ قارورتين من زيت ذكر الثوم<br>واحصل على قارورة صغيرة مجاناً</h3><p>العرض خاص بزيت ذكر الثوم فقط، ولا يشمل لبان ذكر الثوم.</p></div><button class="btn dk" type="button" id="take2">استفد من العرض<i>←</i></button></div>
+<div class="offer rv"><div class="og">🎁</div><div><div class="tag" style="color:var(--bg)">عرض خاص على الزيت</div><h3>خذ قارورتين من زيت ذكر الثوم<br>واحصل على قارورة صغيرة مجاناً</h3><p>وكلما زدت قارورتين حصلت على قارورة صغيرة أخرى: 4 قارورات = قارورتان صغيرتان، أي ما يعادل قارورة كبيرة مجاناً. العرض خاص بزيت ذكر الثوم فقط.</p></div><button class="btn dk" type="button" id="take2">استفد من العرض<i>←</i></button></div>
 </div></section>
 
 <section class="use" id="use"><div class="wrap ug" style="grid-template-columns:1fr;max-width:860px">
@@ -369,7 +369,7 @@ header{transition:none}header.hide{transform:none}
 <div class="rv"><div class="tag" style="color:var(--g6)">أسئلة</div><h2>قبل أن تطلب</h2></div>
 <div class="rv" style="--d:.1s">
 <details open><summary>كيف أدفع؟</summary><p>نقداً عند الاستلام، بعد أن يصلك الطلب وتتأكد منه.</p></details>
-<details><summary>كيف أستفيد من العرض؟</summary><p>اطلب قارورتين من زيت ذكر الثوم وتُضاف لك قارورة صغيرة مجاناً تلقائياً. العرض خاص بالزيت فقط.</p></details><details><summary>كيف أستعمل الزيت؟</summary><p>دلّكي فروة الرأس 30 دقيقة، اتركيه على الشعر 4 ساعات أو أكثر، ثم اغسليه.</p></details>
+<details><summary>كيف أستفيد من العرض؟</summary><p>لكل قارورتين من زيت ذكر الثوم تُضاف لك قارورة صغيرة مجاناً تلقائياً: قارورتان = قارورة صغيرة، و4 قارورات = قارورتان صغيرتان (تعادلان قارورة كبيرة)، وهكذا. العرض خاص بالزيت فقط.</p></details><details><summary>كيف أستعمل الزيت؟</summary><p>دلّكي فروة الرأس 30 دقيقة، اتركيه على الشعر 4 ساعات أو أكثر، ثم اغسليه.</p></details>
 <details><summary>هل المنتجات طبيعية؟</summary><p>نعم. زيت ذكر الثوم من زيوت وأعشاب طبيعية ومعتمد من مخبر التحليل IGA، ولبان ذكر الثوم مكوّن من صمغ عربي ومقطر ولبان ذكر.</p></details>
 <details><summary>ما مدة الصلاحية؟</summary><p>زيت ذكر الثوم صالح سنتين (إنتاج 20 جوان 2026، انتهاء 20 جوان 2028)، ولبان ذكر الثوم صالح 6 أشهر من ماي 2026.</p></details>
 <details><summary>متى يصلني الطلب؟</summary><p>بعد مكالمة التأكيد نسلم الطلب لشركة التوصيل، والمدة تختلف حسب ولايتك.</p></details>
@@ -392,7 +392,7 @@ header{transition:none}header.hide{transform:none}
 const CFG={
  sellerWA:"213560588081",   // رقم واتساب البائع بدون + مثال 213555123456 (اتركه فارغاً لإخفاء الزر)
  deliveryHome:600, deliveryDesk:400, freeOver:0,
- offer:{id:"oil",min:2,stack:false,gift:"قارورة صغيرة من زيت ذكر الثوم"}, // stack:true = هدية لكل قارورتين
+ offer:{id:"oil",min:2,stack:true,gift:"قارورة صغيرة من زيت ذكر الثوم"}, // stack:true = هدية لكل قارورتين
  products:[
   {id:"oil",name:"زيت ذكر الثوم",size:"150 مل",img:"/img/product-oil.jpg",price:2500,dark:true,badge:"🎁 خذ 2 واحصل على قارورة هدية",
    d:"زيت من زيوت وأعشاب طبيعية مع ذكر الثوم، يقوّي الشعر ويكثّفه ويغذي فروة الرأس بعمق. معتمد من مخبر التحليل IGA.",
@@ -424,7 +424,7 @@ const stg=$("#stage"),arch=$(".arch");
 if(!RM&&matchMedia("(pointer:fine)").matches)$("#hero").addEventListener("pointermove",e=>{const r=stg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;arch.style.setProperty("--ry",x*10+"deg");arch.style.setProperty("--rx",-y*10+"deg")});
 /* order form */
 $("#wl").innerHTML='<option value="" disabled selected hidden></option>'+WIL.map((w,i)=>`<option value="${w}">${String(i+1).padStart(2,"0")} · ${w}</option>`).join("");
-function draw(){$("#tiles").innerHTML=P.map(p=>`<div class="tl ${qty[p.id]?'on':''}"><img src="${p.img}" alt=""><div class="ck">✓</div><div class="tt"><b>${p.name}</b><small>${p.size} · ${fmt(p.price)}</small>${p.id==CFG.offer.id?`<em class="tof">${qty[p.id]>=CFG.offer.min?"🎁 الهدية مضافة":"🎁 خذ 2 واحصل على هدية"}</em>`:""}<div class="qty"><button type="button" data-a="${p.id}" data-s="1" aria-label="زيادة ${p.name}">+</button><output>${qty[p.id]}</output><button type="button" data-a="${p.id}" data-s="-1" aria-label="إنقاص ${p.name}">−</button></div></div></div>`).join("");sum()}
+function draw(){$("#tiles").innerHTML=P.map(p=>`<div class="tl ${qty[p.id]?'on':''}"><img src="${p.img}" alt=""><div class="ck">✓</div><div class="tt"><b>${p.name}</b><small>${p.size} · ${fmt(p.price)}</small>${p.id==CFG.offer.id?`<em class="tof">${qty[p.id]>=CFG.offer.min?"🎁 "+Math.floor(qty[p.id]/CFG.offer.min)+" هدية مضافة":"🎁 خذ 2 واحصل على هدية"}</em>`:""}<div class="qty"><button type="button" data-a="${p.id}" data-s="1" aria-label="زيادة ${p.name}">+</button><output>${qty[p.id]}</output><button type="button" data-a="${p.id}" data-s="-1" aria-label="إنقاص ${p.name}">−</button></div></div></div>`).join("");sum()}
 function tot(){const items=P.filter(p=>qty[p.id]>0),sub=items.reduce((s,p)=>s+p.price*qty[p.id],0),home=$("[name=dl]:checked").value=="home";let dv=items.length?(home?CFG.deliveryHome:CFG.deliveryDesk):0;if(CFG.freeOver&&sub>=CFG.freeOver)dv=0;const oq=qty[CFG.offer.id]||0,gifts=CFG.offer.stack?Math.floor(oq/CFG.offer.min):(oq>=CFG.offer.min?1:0);return{items,sub,dv,t:sub+dv,home,gifts}}
 let shown=0;
 function sum(){const o=tot();$("#sl").innerHTML=(o.items.length?o.items.map(p=>`<div class="sl"><span>${p.name} × ${qty[p.id]}</span><span>${fmt(p.price*qty[p.id])}</span></div>`).join(""):'<div class="sl"><span>لم تختر منتجاً بعد</span></div>')+(o.gifts?`<div class="sl gf"><span>🎁 ${CFG.offer.gift} × ${o.gifts}</span><span>مجاناً</span></div>`:"")+`<div class="sl"><span>التوصيل ${o.home?"للمنزل":"للمكتب"}</span><span>${o.items.length?(o.dv?fmt(o.dv):"مجاني"):"—"}</span></div>`+(qty[CFG.offer.id]==CFG.offer.min-1?`<div class="nudge"><span>أضف قارورة زيت أخرى واحصل على ${CFG.offer.gift} مجاناً</span><button type="button" data-take2>أضف</button></div>`:"");

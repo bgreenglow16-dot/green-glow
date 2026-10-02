@@ -79,12 +79,13 @@ export async function onRequestPost({ request, env, waitUntil }) {
     unitPrice: products[id].price,
   }));
   const oilQuantity = quantities.get("oil") || 0;
-  if (oilQuantity >= 2) {
+  const giftQuantity = Math.floor(oilQuantity / 2);
+  if (giftQuantity > 0) {
     items.push({
       id: "gift",
       name: "قارورة صغيرة من زيت ذكر الثوم (هدية)",
       size: "",
-      quantity: 1,
+      quantity: giftQuantity,
       unitPrice: 0,
     });
   }
