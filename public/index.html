@@ -74,7 +74,7 @@ nav{display:flex;gap:24px;font-size:15px}nav a{text-decoration:none;opacity:.7;t
 .scr{position:absolute;bottom:26px;inset-inline-start:50%;translate:50% 0;width:24px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.35);z-index:3}
 .scr::after{content:"";position:absolute;top:7px;left:50%;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;background:var(--gold);animation:sc 1.8s infinite}
 @keyframes sc{to{transform:translateY(14px);opacity:0}}
-@media(max-width:900px){.hero .wrap{grid-template-columns:1fr;text-align:center}.hero .lead{margin-inline:auto}.trust,.cta{justify-content:center}.stage{max-width:300px;order:-1}.f1{inset-inline-end:-18%}.f2{inset-inline-start:-18%}.scr{display:none}.tag::before{display:none}}
+@media(max-width:900px){.hero .wrap{grid-template-columns:1fr;text-align:center}.hero .lead{margin-inline:auto}.trust,.cta{justify-content:center}.stage{max-width:300px;order:-1}.f1{inset-inline-end:-4%}.f2{inset-inline-start:-4%}.scr{display:none}.tag::before{display:none}}
 .cta{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
 /* ribbon */
 .rib{background:var(--gold);color:var(--bg);overflow:hidden;white-space:nowrap;padding:16px 0;font:500 19px var(--hd)}
@@ -165,7 +165,7 @@ h2 .lat{color:var(--g6);font-size:.8em}
 .ok .cta{justify-content:center}
 .cf{position:fixed;top:-20px;width:14px;height:14px;border-radius:0 100% 0 100%;z-index:90;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
-@media(max-width:960px){.ob{grid-template-columns:1fr}.sum{position:static}.card{padding:24px}.f{grid-template-columns:1fr}.tiles{grid-template-columns:1fr}.tl{display:grid;grid-template-columns:96px 1fr}.tl img{height:100%}.tl .tt{padding:14px}}
+@media(max-width:960px){.ob{grid-template-columns:1fr}.card{padding:24px}.f{grid-template-columns:1fr}.tiles{grid-template-columns:1fr}.tl{display:grid;grid-template-columns:96px 1fr}.tl img{height:100%}.tl .tt{padding:14px}}
 /* faq */
 .fq{display:grid;grid-template-columns:.8fr 1.2fr;gap:60px}
 details{border-bottom:1px solid rgba(11,31,23,.12);padding:22px 0}
@@ -236,17 +236,11 @@ body::after{display:none}
 header{transition:none}header.hide{transform:none}
 .bar{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(11,31,23,.92)}
 .hero{min-height:100svh}
-.hero::before,.orbit{animation:none}
-.giant{transform:none}
-.arch{transform:none;clip-path:none;transition:none}.arch img{transform:none;transition:none}
-.fl{animation:none;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(11,31,23,.7)}
-.pc{position:relative;top:0}
-.sum{position:static}
 .rv{transform:translateY(16px);transition-duration:.6s}
 .fd-up{transform:translateY(12px);transition-duration:.7s}
 .btn,.bx,.u{transition-duration:.25s}
 .wafab{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
-@media(max-width:960px){.wafab{bottom:calc(86px + env(safe-area-inset-bottom,0px))}.fl{display:none}}
+@media(max-width:960px){.wafab{bottom:calc(86px + env(safe-area-inset-bottom,0px))}}
 </style>
 </head>
 <body class="lock">
@@ -270,7 +264,7 @@ header{transition:none}header.hide{transform:none}
 <div class="trust fd-up" style="transition-delay:.7s"><div><b data-c="100">0</b>% طبيعي</div><div><b data-c="58">0</b>ولاية توصيل</div><div><b>0</b>بارابين</div></div>
 </div>
 <div class="stage" id="stage"><div class="orbit"></div>
-<div class="arch"><img id="heroimg" fetchpriority="high" decoding="async" src="/img/duo.jpg" alt="زجاجة زيت الثوم Green Glow"></div>
+<div class="arch"><img id="heroimg" fetchpriority="high" decoding="async" src="/img/hero.jpg" alt="زجاجة زيت الثوم Green Glow"></div>
 <div class="fl f1"><b>زيت ذكر الثوم</b>150 مل · معتمد من مخبر IGA</div>
 <div class="fl f2"><b>🎁 خذ 2 + هدية</b>قارورة صغيرة مجاناً</div>
 </div></div>
@@ -316,7 +310,7 @@ header{transition:none}header.hide{transform:none}
 <section class="bento" id="why"><div class="wrap">
 <div class="sh"><div class="rv"><div class="tag">لماذا Green Glow</div><h2>عناية حقيقية <span class="lat">sans compromis</span></h2></div><p class="rv" style="--d:.1s">مكونات قليلة نعرفها جيداً، وتجربة شراء مريحة من الطلب حتى باب بيتك.</p></div>
 <div class="bg">
-<div class="bx ph rv"><img src="/img/oil.jpg" alt="زيت الثوم مع فصوص الثوم" loading="lazy" decoding="async"><div class="cap"><h3>زيت ذكر الثوم</h3><p>يقوّي الشعر من الجذور، يغذي بعمق، ويقلل التساقط مع الاستعمال المنتظم.</p></div></div>
+<div class="bx ph rv"><img src="/img/orig-bento.jpeg" alt="زيت الثوم مع فصوص الثوم" loading="lazy" decoding="async"><div class="cap"><h3>زيت ذكر الثوم</h3><p>يقوّي الشعر من الجذور، يغذي بعمق، ويقلل التساقط مع الاستعمال المنتظم.</p></div></div>
 <div class="bx rv" style="--d:.08s"><div class="ic">✦</div><h3>لمعان ونعومة</h3><p>شعر أكثر بريقاً وسهولة في التصفيف.</p></div>
 <div class="bx gd rv" style="--d:.16s"><div class="big"><span data-c="100">0</span>%</div><p>مكونات طبيعية، بدون بارابين.</p></div>
 <div class="bx wd rv" style="--d:.24s"><div class="ic">❋</div><h3>لبان ذكر للبشرة</h3><p>يقلل التجاعيد ويشد البشرة، يهدئ التهيجات وحب الشباب، ويمنح إشراقة طبيعية.</p></div>
@@ -367,7 +361,7 @@ header{transition:none}header.hide{transform:none}
 
 <section id="real" style="padding-bottom:40px"><div class="wrap">
 <div class="sh"><div class="rv"><div class="tag" style="color:var(--g6)">بدون فلتر</div><h2>صور حقيقية للمنتج</h2></div><p class="rv" style="--d:.1s">هكذا يصلك المنتج بالضبط: نفس العبوة ونفس الملصق.</p></div>
-<div class="gal rv"><figure><img src="/img/oil.jpg" alt="" loading="lazy"><figcaption>زيت ذكر الثوم · 150 مل</figcaption></figure><figure><img src="/img/laban.jpg" alt="" loading="lazy"><figcaption>لبان ذكر الثوم · 50 غ</figcaption></figure><figure><img src="/img/label.jpg" alt="" loading="lazy"><figcaption>المكونات وتاريخ الصلاحية على العبوة</figcaption></figure></div>
+<div class="gal rv"><figure><img src="/img/oil.jpg" alt="" loading="lazy" decoding="async"><figcaption>زيت ذكر الثوم · 150 مل</figcaption></figure><figure><img src="/img/laban.jpg" alt="" loading="lazy" decoding="async"><figcaption>لبان ذكر الثوم · 50 غ</figcaption></figure><figure><img src="/img/duo.jpg" alt="" loading="lazy" decoding="async"><figcaption>المنتجان معاً</figcaption></figure><figure><img src="/img/label.jpg" alt="" loading="lazy" decoding="async"><figcaption>المكونات وتاريخ الصلاحية على العبوة</figcaption></figure></div>
 </div></section>
 <section id="faq" style="padding-top:20px"><div class="wrap"><div class="fq">
 <div class="rv"><div class="tag" style="color:var(--g6)">أسئلة</div><h2>قبل أن تطلب</h2></div>
@@ -398,10 +392,10 @@ const CFG={
  deliveryHome:600, deliveryDesk:400, freeOver:0,
  offer:{id:"oil",min:2,stack:false,gift:"قارورة صغيرة من زيت ذكر الثوم"}, // stack:true = هدية لكل قارورتين
  products:[
-  {id:"oil",name:"زيت ذكر الثوم",size:"150 مل",img:"/img/oil.jpg",price:2500,dark:true,badge:"🎁 خذ 2 واحصل على قارورة هدية",
+  {id:"oil",name:"زيت ذكر الثوم",size:"150 مل",img:"/img/orig-oil.jpeg",price:2500,dark:true,badge:"🎁 خذ 2 واحصل على قارورة هدية",
    d:"زيت من زيوت وأعشاب طبيعية مع ذكر الثوم، يقوّي الشعر ويكثّفه ويغذي فروة الرأس بعمق. معتمد من مخبر التحليل IGA.",
    pts:["يقوّي الشعر من الجذور","يقلل تساقط الشعر","يساعد على تكثيف الشعر","يغذي فروة الرأس بعمق","لمعان ونعومة","لجميع أنواع الشعر"]},
-  {id:"laban",name:"لبان ذكر الثوم",size:"50 غ",img:"/img/laban.jpg",price:2500,
+  {id:"laban",name:"لبان ذكر الثوم",size:"50 غ",img:"/img/orig-laban.jpeg",price:2500,
    d:"مزيج طبيعي من الصمغ العربي والمقطر ولبان ذكر، يحافظ على صحة البشرة وجمالها.",
    pts:["يقلل التجاعيد","يشد البشرة","يعالج حب الشباب","يهدئ التهيجات","نضارة وإشراقة طبيعية","صالح 6 أشهر من ماي 2026"]}]};
 const WIL="أدرار،الشلف،الأغواط،أم البواقي،باتنة،بجاية،بسكرة،بشار،البليدة،البويرة،تمنراست،تبسة،تلمسان،تيارت،تيزي وزو،الجزائر،الجلفة،جيجل،سطيف،سعيدة،سكيكدة،سيدي بلعباس،عنابة،قالمة،قسنطينة،المدية،مستغانم،المسيلة،معسكر،ورقلة،وهران،البيض،إليزي،برج بوعريريج،بومرداس،الطارف،تندوف،تيسمسيلت،الوادي،خنشلة،سوق أهراس،تيبازة،ميلة،عين الدفلى،النعامة،عين تموشنت،غرداية،غليزان،تيميمون،برج باجي مختار،أولاد جلال،بني عباس،عين صالح،عين قزام،تقرت،جانت،المغير،المنيعة".split("،");
@@ -489,7 +483,7 @@ const io=new IntersectionObserver(es=>es.forEach(x=>{if(!x.isIntersecting)return
 const hd=$("#hd"),sk=$("#sk"),od=$("#order"),gi=$("#giant"),hi=$("#heroimg"),stp=$("#steps"),lnp=$("#lnp");let ly=0,tk=0;
 addEventListener("scroll",()=>{if(tk)return;tk=requestAnimationFrame(()=>{tk=0;const y=scrollY;
  ly=y;
- if(!RM){
+ if(!RM){gi.style.setProperty("--gx",y*-.4+"px");hi.style.setProperty("--py",Math.min(y*.08,50)+"px");
   const r=stp.getBoundingClientRect();lnp.style.setProperty("--p",Math.max(0,Math.min(1,(innerHeight*.8-r.top)/(r.height+200))))}
  cineF();const o=od.getBoundingClientRect();sk.classList.toggle("on",y>600&&!(o.top<innerHeight&&o.bottom>0))})},{passive:true});
 </script>
