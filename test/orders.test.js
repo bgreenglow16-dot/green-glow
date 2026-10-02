@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { DatabaseSync } from "node:sqlite";
-import { onRequestPost as createOrder } from "../public/functions/api/orders.js";
-import { onRequestPost as login } from "../public/functions/api/admin/login.js";
-import { onRequestPatch as updateOrder } from "../public/functions/api/admin/orders/[id].js";
-import { isAdmin } from "../public/functions/_shared/admin.js";
+import { onRequestPost as createOrder } from "../functions/api/orders.js";
+import { onRequestPost as login } from "../functions/api/admin/login.js";
+import { onRequestPatch as updateOrder } from "../functions/api/admin/orders/[id].js";
+import { isAdmin } from "../functions/_shared/admin.js";
 
 function createDatabaseStub(runResult = { meta: { last_row_id: 42, changes: 1 } }) {
   const calls = [];
