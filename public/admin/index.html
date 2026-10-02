@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10291f">
+  <title>إدارة الطلبات | Green Glow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{font-family:"IBM Plex Sans Arabic",sans-serif;color:#14231b;background:#f6f0e4;font-synthesis:none}
+    *{box-sizing:border-box}
+    body{margin:0}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .top{background:#10291f;color:#f6f0e4;padding:18px max(20px,calc((100vw - 1180px)/2));display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{font:600 15px "Alexandria",sans-serif;letter-spacing:.18em;direction:ltr}
+    main{max-width:1180px;margin:32px auto;padding:0 20px}
+    .panel{background:#fffdf8;border:1px solid #e5dccb;border-radius:18px;padding:24px;box-shadow:0 12px 35px #14231b0c}
+    h1{font:600 clamp(23px,4vw,34px) "Alexandria",sans-serif;margin:0}
+    .muted{color:#66756a}
+    .login{max-width:430px;margin:10vh auto}
+    .login form{display:grid;gap:16px;margin-top:24px}
+    label{display:grid;gap:7px;font-weight:600}
+    input,select{min-width:0;border:1px solid #d8cebd;border-radius:10px;padding:10px 12px;background:#fff;color:#14231b}
+    button{border:0;border-radius:999px;background:#cfae6b;color:#10291f;padding:11px 19px;font-weight:700}
+    button:disabled{opacity:.55;cursor:wait}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+    .toolbar-actions{display:flex;align-items:center;gap:10px}
+    .table-wrap{overflow:auto;border:1px solid #e5dccb;border-radius:12px}
+    table{border-collapse:collapse;width:100%;min-width:990px;background:#fff}
+    th,td{text-align:right;padding:12px;border-bottom:1px solid #eee7dc;vertical-align:top}
+    th{background:#f1eadc;font-weight:700;white-space:nowrap}
+    td small{display:block;color:#66756a;margin-top:4px}
+    td .phone{direction:ltr;text-align:right;display:inline-block}
+    td .tracking{width:145px}
+    td .status{min-width:130px}
+    .save{padding:8px 14px}
+    .message{margin:12px 0;color:#9a362a;min-height:1.6em}
+    .empty{text-align:center;color:#66756a;padding:35px}
+    .logout{background:transparent;border:1px solid #cfae6b;color:#f6f0e4}
+    [hidden]{display:none!important}
+    @media(max-width:600px){main{margin:18px auto;padding:0 12px}.panel{padding:17px}.top{padding:15px 14px}.toolbar{align-items:flex-start;flex-direction:column}.login{margin:7vh auto}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">GREEN GLOW</div>
+    <button id="logout" class="logout" type="button" hidden>تسجيل الخروج</button>
+  </header>
+  <main>
+    <section id="login-panel" class="panel login">
+      <h1>لوحة الطلبات</h1>
+      <p class="muted">سجّل الدخول لعرض طلبات زبائن Green Glow.</p>
+      <form id="login-form">
+        <label for="password">كلمة المرور</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button id="login-button" type="submit">دخول</button>
+      </form>
+      <p id="login-message" class="message" role="alert"></p>
+    </section>
+    <section id="orders-panel" class="panel" hidden>
+      <div class="toolbar">
+        <div>
+          <h1>الطلبات الواردة</h1>
+          <p class="muted">تتحدث القائمة تلقائيا كل 15 ثانية.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button id="refresh" type="button">تحديث</button>
+          <span id="last-updated" class="muted" aria-live="polite"></span>
+        </div>
+      </div>
+      <p id="orders-message" class="message" role="alert"></p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>الزبون</th><th>الهاتف</th><th>العنوان والتوصيل</th>
+            <th>المنتج والكمية</th><th>السعر</th><th>تاريخ الطلب</th>
+            <th>الحالة ورقم التتبع</th><th>حفظ</th>
+          </tr></thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="/admin.js" defer></script>
+</body>
+</html>
