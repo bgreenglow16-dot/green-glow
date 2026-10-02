@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Green Glow Natural Oil — الطبيعة في خدمة شعرك</title>
-<meta name="description" content="زيت الثوم ولبان ذكر من Green Glow. مكونات طبيعية، بدون بارابين، والدفع عند الاستلام في 58 ولاية.">
+<meta name="description" content="زيت الثوم ولبان ذكر من Green Glow. مكونات طبيعية، بدون بارابين، والدفع عند الاستلام في 43 ولاية.">
 <meta name="theme-color" content="#0b1f17">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
@@ -207,6 +207,8 @@ footer .row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;m
 .nudge{margin-top:14px;padding:12px 14px;border-radius:16px;background:rgba(207,174,107,.15);color:var(--gold2);font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;position:relative;animation:fi .6s}
 .nudge button{border:0;background:var(--gold);color:var(--bg);font:600 13px var(--bd);padding:7px 16px;border-radius:999px;cursor:pointer;flex:none}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+.seg small{display:block;font-size:12px;font-weight:500;opacity:.8;min-height:1.2em}
+.seg label:has(input:disabled){cursor:not-allowed}
 .wafab{position:fixed;bottom:20px;left:20px;z-index:50;width:56px;height:56px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 6px 20px #0003}.wafab svg{width:30px;height:30px;fill:#fff}
 
 .cine{height:520vh;padding:0;background:var(--bg)}
@@ -263,7 +265,7 @@ header{transition:none}header.hide{transform:none}
 <div class="fr lat fd-up" style="transition-delay:.35s">La nature au service de vos cheveux</div>
 <p class="lead fd-up" style="transition-delay:.45s">زيت ذكر الثوم لشعر أقوى وأكثف، ولبان ذكر الثوم لبشرة نقية ومشرقة. مكونات طبيعية بلا بارابين، وتدفع عند الاستلام.</p>
 <div class="cta fd-up" style="transition-delay:.55s"><a class="btn" href="#order">اطلب الآن · الدفع عند الاستلام<i>←</i></a><a class="ghost" href="#products">اكتشف المنتجات</a></div>
-<div class="trust fd-up" style="transition-delay:.7s"><div><b data-c="100">0</b>% طبيعي</div><div><b data-c="58">0</b>ولاية توصيل</div><div><b>0</b>بارابين</div></div>
+<div class="trust fd-up" style="transition-delay:.7s"><div><b data-c="100">0</b>% طبيعي</div><div><b data-c="43">0</b>ولاية توصيل</div><div><b>0</b>بارابين</div></div>
 </div>
 <div class="stage" id="stage"><div class="orbit"></div>
 <div class="arch"><img id="heroimg" fetchpriority="high" decoding="async" src="/img/hero.jpg" alt="زجاجة زيت الثوم Green Glow"></div>
@@ -317,7 +319,7 @@ header{transition:none}header.hide{transform:none}
 <div class="bx gd rv" style="--d:.16s"><div class="big"><span data-c="100">0</span>%</div><p>مكونات طبيعية، بدون بارابين.</p></div>
 <div class="bx wd rv" style="--d:.24s"><div class="ic">❋</div><h3>لبان ذكر للبشرة</h3><p>يقلل التجاعيد ويشد البشرة، يهدئ التهيجات وحب الشباب، ويمنح إشراقة طبيعية.</p></div>
 <div class="bx wd rv"><div class="ic">⌂</div><h3>الدفع عند الاستلام</h3><p>لا تدفع شيئاً مسبقاً. نتصل بك للتأكيد ثم يصلك الطلب إلى المنزل أو المكتب.</p></div>
-<div class="bx rv" style="--d:.08s"><div class="big" data-c="58">0</div><p>ولاية يصلها التوصيل.</p></div>
+<div class="bx rv" style="--d:.08s"><div class="big" data-c="43">0</div><p>ولاية يصلها التوصيل.</p></div>
 <div class="bx rv" style="--d:.16s"><div class="ic">⚗</div><h3>معتمد من مخبر IGA</h3><p>زيت ذكر الثوم معتمد من مخبر التحليل IGA، المحمدية، الجزائر.</p></div>
 </div></div></section>
 
@@ -345,12 +347,12 @@ header{transition:none}header.hide{transform:none}
 <div class="fd full"><textarea id="nt" rows="2" placeholder=" "></textarea><label for="nt">ملاحظة (اختياري)</label></div>
 </div>
 <div class="lbl"><span>3</span>طريقة التوصيل</div>
-<div class="seg" id="seg"><label><input type="radio" name="dl" value="home" checked><span>إلى المنزل</span></label><label><input type="radio" name="dl" value="desk"><span>إلى المكتب</span></label></div>
+<div class="seg" id="seg"><label><input type="radio" name="dl" value="home" checked><span>إلى المنزل<small data-dp="home"></small></span></label><label><input type="radio" name="dl" value="desk"><span>إلى المكتب<small data-dp="desk"></small></span></label></div>
 </form>
 <aside class="sum rv" style="--d:.12s"><h3>ملخص الطلب</h3><div id="sl"></div>
 <div class="tot"><small>المجموع مع التوصيل</small><b id="tt">0 دج</b></div>
 <button class="btn" type="submit" form="fm" id="go">تأكيد الطلب<i>←</i></button>
-<div class="ga"><span>دفع عند الاستلام</span><span>مكالمة تأكيد</span><span>58 ولاية</span></div></aside>
+<div class="ga"><span>دفع عند الاستلام</span><span>مكالمة تأكيد</span><span>43 ولاية</span></div></aside>
 </div>
 <div class="card ok" id="ok" hidden>
 <div class="tick"><svg width="48" height="48" viewBox="0 0 46 46"><path d="M9 24l9 9 19-20"/></svg></div>
@@ -411,7 +413,7 @@ const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
 (document.readyState==="loading"?f=>addEventListener("DOMContentLoaded",f):f=>f())(()=>setTimeout(()=>{$("#ld").classList.add("out");document.body.classList.remove("lock");setTimeout(()=>{$("#hero").classList.add("go");$$(".trust [data-c]").forEach(count)},350)},RM?0:700));
 function count(el){const to=+el.dataset.c;if(RM){el.textContent=to;return}const t0=performance.now();(function f(t){const k=Math.min((t-t0)/1600,1);el.textContent=Math.round(to*(1-Math.pow(1-k,4)));if(k<1)requestAnimationFrame(f)})(t0)}
 /* ribbon */
-const rw=["زيت ذكر الثوم","لبان ذكر الثوم","🎁 خذ 2 زيت + قارورة هدية","100% طبيعي","بدون بارابين","الدفع عند الاستلام","توصيل 58 ولاية"];
+const rw=["زيت ذكر الثوم","لبان ذكر الثوم","🎁 خذ 2 زيت + قارورة هدية","100% طبيعي","بدون بارابين","الدفع عند الاستلام","توصيل 43 ولاية"];
 $("#rib").innerHTML=Array(4).fill(rw).flat().map(t=>`<span>${t}</span>`).join("");
 /* product stack */
 $("#stack").innerHTML=P.map((p,i)=>`<article class="pc ${p.dark?'dk':''}" style="--i:${i}"><div class="im"><img src="${p.img}" alt="${p.name} من Green Glow"></div><div class="tx"><div class="no">0${i+1} / 0${P.length}</div>${p.badge?`<div class="pbadge">${p.badge}</div>`:""}<h3>${p.name}</h3><div class="sz">${p.size}</div><p class="d">${p.d}</p><ul>${p.pts.map(x=>`<li>${x}</li>`).join("")}</ul><div class="pr"><b>${fmt(p.price)}</b><button class="btn ${p.dark?'':'dk'}" data-pick="${p.id}" type="button">أضف إلى طلبي<i>+</i></button>${p.id==CFG.offer.id?'<button class="ghost" data-take2 type="button" style="background:none;border-width:0 0 1px;font:inherit;cursor:pointer;color:var(--gold2)">🎁 خذ 2 + هدية</button>':""}</div></div></article>`).join("");
@@ -425,12 +427,32 @@ if(!RM&&matchMedia("(pointer:fine)").matches)$("#hero").addEventListener("pointe
 /* order form */
 $("#wl").innerHTML='<option value="" disabled selected hidden></option>'+WIL.map((w,i)=>`<option value="${w}">${String(i+1).padStart(2,"0")} · ${w}</option>`).join("");
 function draw(){$("#tiles").innerHTML=P.map(p=>`<div class="tl ${qty[p.id]?'on':''}"><img src="${p.img}" alt=""><div class="ck">✓</div><div class="tt"><b>${p.name}</b><small>${p.size} · ${fmt(p.price)}</small>${p.id==CFG.offer.id?`<em class="tof">${qty[p.id]>=CFG.offer.min?"🎁 "+Math.floor(qty[p.id]/CFG.offer.min)+" هدية مضافة":"🎁 خذ 2 واحصل على هدية"}</em>`:""}<div class="qty"><button type="button" data-a="${p.id}" data-s="1" aria-label="زيادة ${p.name}">+</button><output>${qty[p.id]}</output><button type="button" data-a="${p.id}" data-s="-1" aria-label="إنقاص ${p.name}">−</button></div></div></div>`).join("");sum()}
-function tot(){const items=P.filter(p=>qty[p.id]>0),sub=items.reduce((s,p)=>s+p.price*qty[p.id],0),home=$("[name=dl]:checked").value=="home";let dv=items.length?(home?CFG.deliveryHome:CFG.deliveryDesk):0;if(CFG.freeOver&&sub>=CFG.freeOver)dv=0;const oq=qty[CFG.offer.id]||0,gifts=CFG.offer.stack?Math.floor(oq/CFG.offer.min):(oq>=CFG.offer.min?1:0);return{items,sub,dv,t:sub+dv,home,gifts}}
+function tot(){const items=P.filter(p=>qty[p.id]>0),sub=items.reduce((s,p)=>s+p.price*qty[p.id],0),home=$("[name=dl]:checked").value=="home";let dv=items.length?deliveryFor(home):0;if(CFG.freeOver&&sub>=CFG.freeOver)dv=0;const oq=qty[CFG.offer.id]||0,gifts=CFG.offer.stack?Math.floor(oq/CFG.offer.min):(oq>=CFG.offer.min?1:0);return{items,sub,dv,t:sub+dv,home,gifts}}
 let shown=0;
 function sum(){const o=tot();$("#sl").innerHTML=(o.items.length?o.items.map(p=>`<div class="sl"><span>${p.name} × ${qty[p.id]}</span><span>${fmt(p.price*qty[p.id])}</span></div>`).join(""):'<div class="sl"><span>لم تختر منتجاً بعد</span></div>')+(o.gifts?`<div class="sl gf"><span>🎁 ${CFG.offer.gift} × ${o.gifts}</span><span>مجاناً</span></div>`:"")+`<div class="sl"><span>التوصيل ${o.home?"للمنزل":"للمكتب"}</span><span>${o.items.length?(o.dv?fmt(o.dv):"مجاني"):"—"}</span></div>`+(qty[CFG.offer.id]==CFG.offer.min-1?`<div class="nudge"><span>أضف قارورة زيت أخرى واحصل على ${CFG.offer.gift} مجاناً</span><button type="button" data-take2>أضف</button></div>`:"");
  const from=shown,to=o.t,t0=performance.now();shown=to;(function f(t){const k=RM?1:Math.min((t-t0)/600,1);$("#tt").textContent=fmt(from+(to-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)})(t0)}
 $("#tiles").onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;qty[b.dataset.a]=Math.max(0,Math.min(20,qty[b.dataset.a]+ +b.dataset.s));draw()};
 $$("[name=dl]").forEach(r=>r.onchange=()=>{$("#seg").classList.toggle("desk",r.value=="desk"&&r.checked);sum()});draw();
+/* ZR Express: served wilayas, communes and delivery prices */
+let LOC=null;
+const selW=()=>LOC&&LOC.wilayas.find(w=>w.nameArabic===$("#wl").value);
+const selC=()=>{const w=selW(),el=$("#cm");return w&&el.tagName==="SELECT"?w.communes.find(c=>c.id===(el.selectedOptions[0]&&el.selectedOptions[0].dataset.id)):null};
+function deliveryFor(home){const w=selW(),c=selC(),k=home?"home":"desk";const p=c&&c.rates&&c.rates[k]!=null?c.rates[k]:(w&&w.rates&&w.rates[k]!=null?w.rates[k]:null);return p!=null?p:(home?CFG.deliveryHome:CFG.deliveryDesk)}
+function priceLabels(){const w=selW(),c=selC();
+ for(const t of ["home","desk"]){let ok=true,txt="";
+  if(c){ok=t=="home"?c.home:c.desk;txt=ok?fmt(deliveryFor(t=="home")):"غير متاح"}
+  else if(w){const p=w.rates&&w.rates[t];txt=p!=null?"من "+fmt(p):""}
+  $('[data-dp="'+t+'"]').textContent=txt;const inp=$('[name=dl][value="'+t+'"]');inp.disabled=!ok;inp.closest("label").style.opacity=ok?1:.45}
+ const cur=$("[name=dl]:checked");if(cur&&cur.disabled){const other=$("[name=dl]:not(:disabled)");if(other){other.checked=true;$("#seg").classList.toggle("desk",other.value=="desk")}}
+ sum()}
+function fillCommunes(){const w=selW(),el=$("#cm");if(el.tagName!=="SELECT")return;el.innerHTML='<option value="" disabled selected hidden></option>'+(w?w.communes.map(c=>'<option value="'+esc(c.nameArabic)+'" data-id="'+c.id+'">'+esc(c.nameArabic)+'</option>').join(""):"")}
+$("#fm").addEventListener("change",e=>{if(e.target.id==="wl"){fillCommunes();priceLabels()}else if(e.target.id==="cm")priceLabels()});
+fetch("/api/locations").then(r=>r.ok?r.json():Promise.reject()).then(d=>{if(!d.wilayas||!d.wilayas.length)return;LOC=d;
+ const keep=$("#wl").value;
+ $("#wl").innerHTML='<option value="" disabled selected hidden></option>'+d.wilayas.map(w=>'<option value="'+esc(w.nameArabic)+'">'+String(w.code).padStart(2,"0")+" · "+esc(w.nameArabic)+"</option>").join("");
+ if(keep&&d.wilayas.some(w=>w.nameArabic===keep))$("#wl").value=keep;
+ const old=$("#cm"),keepC=old.value;old.outerHTML='<select id="cm"></select>';fillCommunes();if(keepC&&selW()){const el=$("#cm");el.value=keepC}
+ priceLabels()}).catch(()=>{});
 const store={get:()=>{try{return JSON.parse(localStorage.getItem("gg_orders")||"[]")}catch(e){return[]}},set:v=>{try{localStorage.setItem("gg_orders",JSON.stringify(v))}catch(e){}}};
 let last="";
 $("#fm").onsubmit=e=>{e.preventDefault();

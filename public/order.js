@@ -59,6 +59,7 @@ orderForm.addEventListener(
           phone,
           wilaya: value("wl"),
           municipality: value("cm"),
+          communeId: document.querySelector("#cm").selectedOptions?.[0]?.dataset.id || "",
           address: value("ad"),
           deliveryType,
           items,

@@ -1,4 +1,5 @@
 import { json } from "../_shared/admin.js";
+import { deliveryPriceFor, getLocations, normalize } from "../_shared/zr.js";
 
 const products = {
   oil: { name: "زيت ذكر الثوم", size: "150 مل", price: 2500 },
@@ -97,7 +98,28 @@ export async function onRequestPost({ request, env, waitUntil }) {
     (sum, [id, count]) => sum + products[id].price * count,
     0,
   );
-  const totalPrice = subtotal + deliveryPrices[deliveryType];
+  // Prefer the live ZR Express rate for the chosen commune; fall back to the flat fee if ZR is unreachable.
+  let deliveryPrice = deliveryPrices[deliveryType];
+  try {
+    const { wilayas } = await getLocations(env);
+    const wilayaInfo = wilayas.find((item) => normalize(item.nameArabic) === normalize(wilaya));
+    if (!wilayaInfo) return json({ error: "لا نوصل حاليا إلى هذه الولاية." }, 400);
+    const communeInfo =
+      wilayaInfo.communes.find((item) => item.id === body.communeId) ||
+      wilayaInfo.communes.find((item) => normalize(item.nameArabic) === normalize(municipality));
+    if (!communeInfo) return json({ error: "اختر البلدية من القائمة." }, 400);
+    if (deliveryType === "home" && !communeInfo.home) {
+      return json({ error: "التوصيل إلى المنزل غير متاح في هذه البلدية." }, 400);
+    }
+    if (deliveryType === "desk" && !communeInfo.desk) {
+      return json({ error: "التوصيل إلى المكتب غير متاح في هذه البلدية." }, 400);
+    }
+    const livePrice = deliveryPriceFor(wilayaInfo, communeInfo, deliveryType);
+    if (livePrice !== null) deliveryPrice = livePrice;
+  } catch (error) {
+    console.error("Could not load ZR delivery rates, using flat fee:", error?.message);
+  }
+  const totalPrice = subtotal + deliveryPrice;
 
   let result;
   try {

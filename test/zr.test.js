@@ -42,3 +42,74 @@ test("helpers normalise text and phone numbers", () => {
   assert.equal(normalize("الجزائرة"), normalize("الجزائره"));
   assert.equal(toInternationalPhone("0551234567"), "+213551234567");
 });
+
+test("order delivery price comes from ZR rates and unserved wilayas are refused", async () => {
+  const { onRequestPost: createOrder } = await import("../functions/api/orders.js");
+  const zrTerritories = {
+    items: [
+      { id: "w31", level: "wilaya", code: 31, name: "Oran", nameArabic: "وهران", delivery: { canSend: true } },
+      { id: "w1", level: "wilaya", code: 1, name: "Adrar", nameArabic: "أدرار", delivery: { canSend: false } },
+      { id: "o1", level: "commune", parentId: "w31", name: "Es Senia", nameArabic: "السانية", delivery: { hasHomeDelivery: true, hasPickupPoint: false } },
+      { id: "o2", level: "commune", parentId: "w31", name: "Bir El Djir", nameArabic: "بئر الجير", delivery: { hasHomeDelivery: true, hasPickupPoint: true } },
+    ],
+    hasNext: false,
+  };
+  const zrRates = {
+    rates: [
+      { toTerritoryId: "w31", deliveryPrices: [{ deliveryType: "home", price: 700 }, { deliveryType: "pickup-point", price: 450 }] },
+      { toTerritoryId: "o2", deliveryPrices: [{ deliveryType: "home", price: 650 }, { deliveryType: "pickup-point", price: 400 }] },
+    ],
+  };
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url) =>
+    new Response(JSON.stringify(String(url).includes("delivery-pricing") ? zrRates : zrTerritories), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+
+  try {
+    const place = async (overrides) => {
+      const calls = [];
+      const DB = {
+        prepare: () => ({
+          bind: (...values) => ({
+            run: async () => {
+              calls.push(values);
+              return { meta: { last_row_id: 7, changes: 1 } };
+            },
+          }),
+        }),
+      };
+      const response = await createOrder({
+        request: new Request("https://green-glow.pages.dev/api/orders", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            customerName: "أحمد محمد",
+            phone: "0551234567",
+            wilaya: "وهران",
+            municipality: "بئر الجير",
+            address: "شارع المثال",
+            deliveryType: "home",
+            items: [{ id: "laban", quantity: 1 }],
+            ...overrides,
+          }),
+        }),
+        env: { DB, ZR_API_KEY: "k", ZR_TENANT_ID: "t" },
+        waitUntil() {},
+      });
+      return { status: response.status, total: calls[0]?.[9], body: await response.json() };
+    };
+
+    assert.equal((await place({})).total, 2500 + 650);
+    assert.equal((await place({ deliveryType: "desk" })).total, 2500 + 400);
+    // A commune without its own rate falls back to the wilaya rate.
+    assert.equal((await place({ municipality: "السانية" })).total, 2500 + 700);
+    // No pickup point in that commune.
+    assert.equal((await place({ municipality: "السانية", deliveryType: "desk", address: "" })).status, 400);
+    assert.equal((await place({ wilaya: "أدرار", municipality: "أدرار" })).status, 400);
+    assert.equal((await place({ municipality: "بلدية وهمية" })).status, 400);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});

@@ -77,10 +77,15 @@ export async function loadPickupHubs(env) {
 }
 
 export function findWilaya(territories, wilayaName) {
-  const index = WILAYAS.findIndex((name) => normalize(name) === normalize(wilayaName));
-  if (index === -1) throw new ZrError(`الولاية غير معروفة: ${wilayaName}`, 422);
-  const code = index + 1;
-  const wilaya = territories.find((item) => item.level === "wilaya" && item.code === code);
+  const wanted = normalize(wilayaName);
+  let wilaya = territories.find(
+    (item) => item.level === "wilaya" && normalize(item.nameArabic) === wanted,
+  );
+  if (!wilaya) {
+    const index = WILAYAS.findIndex((name) => normalize(name) === wanted);
+    if (index === -1) throw new ZrError(`الولاية غير معروفة: ${wilayaName}`, 422);
+    wilaya = territories.find((item) => item.level === "wilaya" && item.code === index + 1);
+  }
   if (!wilaya) throw new ZrError(`ZR Express لا تخدم ولاية ${wilayaName}.`, 422);
   if (wilaya.delivery?.canSend === false) {
     throw new ZrError(`ZR Express لا ترسل حاليا إلى ولاية ${wilayaName}.`, 422);
@@ -108,4 +113,61 @@ export function matchCommune(communes, municipality) {
 
 export function toInternationalPhone(phone) {
   return `+213${String(phone).replace(/^0/, "")}`;
+}
+
+const LOCATIONS_TTL_MS = 10 * 60 * 1000;
+let locationsCache = { at: 0, value: null };
+
+// Served wilayas with their communes and ZR delivery prices (commune price, else wilaya price).
+export async function getLocations(env) {
+  if (locationsCache.value && Date.now() - locationsCache.at < LOCATIONS_TTL_MS) {
+    return locationsCache.value;
+  }
+  const [territories, ratesResponse] = await Promise.all([
+    loadTerritories(env),
+    zrRequest(env, "/delivery-pricing/rates"),
+  ]);
+
+  const rateByTerritory = new Map();
+  for (const rate of ratesResponse?.rates || []) {
+    const prices = {};
+    for (const price of rate.deliveryPrices || []) {
+      prices[price.deliveryType] = price.discountedPrice ?? price.price;
+    }
+    rateByTerritory.set(rate.toTerritoryId, {
+      home: prices.home > 0 ? prices.home : null,
+      desk: prices["pickup-point"] > 0 ? prices["pickup-point"] : null,
+    });
+  }
+
+  const wilayas = territories
+    .filter((item) => item.level === "wilaya" && item.delivery?.canSend !== false)
+    .sort((a, b) => a.code - b.code)
+    .map((wilaya) => ({
+      id: wilaya.id,
+      code: wilaya.code,
+      name: wilaya.name,
+      nameArabic: wilaya.nameArabic || wilaya.name,
+      rates: rateByTerritory.get(wilaya.id) || null,
+      communes: communesOf(territories, wilaya)
+        .sort((a, b) => (a.nameArabic || a.name).localeCompare(b.nameArabic || b.name, "ar"))
+        .map((commune) => ({
+          id: commune.id,
+          name: commune.name,
+          nameArabic: commune.nameArabic || commune.name,
+          home: commune.delivery?.hasHomeDelivery !== false,
+          desk: commune.delivery?.hasPickupPoint !== false,
+          rates: rateByTerritory.get(commune.id) || null,
+        })),
+    }));
+
+  if (!wilayas.length) throw new ZrError("تعذر تحميل ولايات ZR Express.", 502);
+  const value = { wilayas };
+  locationsCache = { at: Date.now(), value };
+  return value;
+}
+
+export function deliveryPriceFor(wilaya, commune, type) {
+  const key = type === "home" ? "home" : "desk";
+  return commune?.rates?.[key] ?? wilaya?.rates?.[key] ?? null;
 }
