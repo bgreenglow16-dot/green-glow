@@ -72,6 +72,18 @@ orderForm.addEventListener(
 
       document.querySelector("#okt").textContent =
         `رقم طلبك: ${result.orderId}\nسنتصل بك قريبا لتأكيد الطلب.`;
+      const waText = [
+        `طلب جديد #${result.orderId}`,
+        `الاسم: ${value("nm")}`,
+        `الهاتف: ${phone}`,
+        `الولاية: ${value("wl")}`,
+        `البلدية: ${value("cm")}`,
+        `العنوان: ${value("ad") || "-"}`,
+        `الطلب: ${items.map((item) => `${item.id === "oil" ? "زيت ذكر الثوم" : "لبان ذكر الثوم"} × ${item.quantity}`).join("، ")}`,
+      ].join(String.fromCharCode(10));
+      const waLink = document.querySelector("#wa");
+      waLink.href = `https://wa.me/${CFG.sellerWA}?text=${encodeURIComponent(waText)}`;
+      waLink.hidden = false;
       document.querySelector("#ob").hidden = true;
       document.querySelector("#ok").hidden = false;
       document.querySelector("#ok").scrollIntoView({ block: "center" });

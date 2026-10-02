@@ -53,7 +53,13 @@ function renderOrders(orders) {
     const phoneLink = document.createElement("a");
     phoneLink.href = `tel:${order.phone}`;
     phoneLink.textContent = order.phone;
-    phone.replaceChildren(phoneLink);
+    const waLink = document.createElement("a");
+    waLink.href = `https://wa.me/213${order.phone.replace(/^0/, "")}`;
+    waLink.target = "_blank";
+    waLink.rel = "noopener";
+    waLink.textContent = "واتساب";
+    waLink.className = "wa-link";
+    phone.replaceChildren(phoneLink, document.createTextNode(" · "), waLink);
 
     const address = document.createElement("td");
     address.textContent = `${order.wilaya}، ${order.municipality}`;

@@ -131,41 +131,5 @@ export async function onRequestPost({ request, env, waitUntil }) {
     return json({ error: "لم نتمكن من تأكيد حفظ الطلب." }, 500);
   }
 
-  if (env.WHATSAPP_PHONE && env.WHATSAPP_APIKEY) {
-    const message = [
-      `طلب جديد #${orderId}`,
-      `الاسم: ${customerName}`,
-      `الهاتف: ${phone}`,
-      `الولاية: ${wilaya}`,
-      `البلدية: ${municipality}`,
-      `العنوان: ${address || "—"}`,
-      `التوصيل: ${deliveryType === "home" ? "منزل" : "مكتب"}`,
-      `المنتجات: ${product}`,
-      `الإجمالي: ${totalPrice} دج`,
-      `ملاحظة: ${notes || "—"}`,
-    ].join("\n");
-
-    const url = new URL("https://api.callmebot.com/whatsapp.php");
-    url.search = new URLSearchParams({
-      phone: env.WHATSAPP_PHONE,
-      text: message,
-      apikey: env.WHATSAPP_APIKEY,
-    });
-
-    waitUntil(
-      fetch(url)
-        .then((response) => {
-          if (!response.ok) {
-            console.error("WhatsApp order notification failed with status", response.status);
-          }
-        })
-        .catch((error) => {
-          console.error("WhatsApp order notification failed:", error);
-        }),
-    );
-  } else if (env.WHATSAPP_PHONE || env.WHATSAPP_APIKEY) {
-    console.error("WhatsApp notification needs both WHATSAPP_PHONE and WHATSAPP_APIKEY.");
-  }
-
   return json({ ok: true, orderId });
 }
