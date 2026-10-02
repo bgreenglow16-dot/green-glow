@@ -1,4 +1,5 @@
 import { json } from "../_shared/admin.js";
+import { notifyAll } from "../_shared/push.js";
 import {
   clientIp,
   forbidCrossOrigin,
@@ -171,6 +172,16 @@ export async function onRequestPost({ request, env, waitUntil }) {
     console.error("D1 insert completed without returning an order ID.");
     return json({ error: "لم نتمكن من تأكيد حفظ الطلب." }, 500);
   }
+
+  // Phone notification for the manager; never allowed to affect the customer's confirmation.
+  waitUntil(
+    notifyAll(env, {
+      title: `طلب جديد #${orderId}`,
+      body: `${customerName} · ${wilaya} · ${totalPrice} دج`,
+      url: "/admin/",
+      tag: `order-${orderId}`,
+    }).catch((error) => console.error("New-order notification failed:", error?.message)),
+  );
 
   return json({ ok: true, orderId });
 }

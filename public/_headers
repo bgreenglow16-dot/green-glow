@@ -21,3 +21,7 @@
 
 /admin.js
   Cache-Control: no-store
+
+/admin/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /admin/

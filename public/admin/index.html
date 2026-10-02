@@ -9,6 +9,11 @@
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="robots" content="noindex">
+  <link rel="manifest" href="/admin/manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="طلبات Green Glow">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>إدارة الطلبات | Green Glow</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,6 +47,8 @@
     .ibtn{width:42px;height:42px;border-radius:13px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--iv);display:grid;place-items:center;transition:background .2s,transform .2s}
     .ibtn:hover{background:rgba(255,255,255,.14)}.ibtn:active{transform:scale(.94)}
     .ibtn svg{width:20px;height:20px}
+    .ibtn.on{position:relative}
+    .ibtn.on::after{content:"";position:absolute;top:7px;inset-inline-end:7px;width:9px;height:9px;border-radius:50%;background:#2fb872;box-shadow:0 0 0 2px var(--bg2)}
     .ibtn.spin svg{animation:spin .8s linear infinite}
     @keyframes spin{to{transform:rotate(-360deg)}}
 
@@ -261,6 +268,7 @@
         <div><b>GREEN GLOW</b><small>لوحة إدارة الطلبات</small></div>
       </div>
       <div class="top-actions">
+        <button id="notify" class="ibtn" type="button" title="إشعارات الطلبات الجديدة" aria-label="إشعارات الطلبات الجديدة" hidden></button>
         <button id="refresh" class="ibtn" type="button" title="تحديث" aria-label="تحديث" hidden></button>
         <button id="logout" class="ibtn" type="button" title="تسجيل الخروج" aria-label="تسجيل الخروج" hidden></button>
       </div>

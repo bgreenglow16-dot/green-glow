@@ -31,6 +31,8 @@ const ICONS = {
   repeat: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
   chart: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
   coins: '<circle cx="9" cy="9" r="6"/><path d="M15.500 6.500A6 6 0 1 1 9.500 17"/><path d="M7 9h4"/>',
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.300 21a1.900 1.900 0 0 0 3.400 0"/>',
+  bellOff: '<path d="M8.700 3.400A6 6 0 0 1 18 8c0 2.700.4 4.600 1 6"/><path d="M6.300 6.300C6.100 6.800 6 7.400 6 8c0 7-3 8-3 8h13"/><path d="M10.300 21a1.900 1.900 0 0 0 3.400 0"/><path d="M3 3l18 18"/>',
   inbox: '<path d="M3 13l3-8h12l3 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
 };
 const WHATSAPP =
@@ -578,6 +580,113 @@ $("#tabs").addEventListener("click", (event) => {
   if (tab) showTab(tab.dataset.tab);
 });
 
+/* ---------- phone notifications (Web Push) ---------- */
+const notifyButton = $("#notify");
+const pushSupported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+let swRegistration = null;
+
+const keyToBytes = (value) => {
+  const padded = value + "=".repeat((4 - (value.length % 4)) % 4);
+  return Uint8Array.from(atob(padded.replace(/-/g, "+").replace(/_/g, "/")), (char) => char.charCodeAt(0));
+};
+
+function paintNotify(isOn) {
+  notifyButton.classList.toggle("on", isOn);
+  notifyButton.replaceChildren(icon(isOn ? "bell" : "bellOff"));
+  notifyButton.title = isOn ? "الإشعارات مفعّلة (اضغط للإيقاف)" : "تفعيل إشعارات الطلبات الجديدة";
+}
+
+async function currentSubscription() {
+  if (!swRegistration) return null;
+  return swRegistration.pushManager.getSubscription();
+}
+
+function explainNotifications() {
+  const dialog = el("dialog");
+  const close = () => {
+    dialogOpen = false;
+    dialog.close();
+    dialog.remove();
+  };
+  dialog.append(
+    el("h2", { text: "تفعيل الإشعارات على هاتفك" }),
+    el("p", { text: "لتصلك إشعارات فورية بالطلبات الجديدة، ثبّت اللوحة كتطبيق ثم فعّل الإشعارات منه:" }),
+    el(
+      "div",
+      { class: "wa-list" },
+      el("div", { style: "background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;line-height:1.8" }, el("b", { text: "آيفون (Safari):" }), el("br"), "اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»، ثم افتح التطبيق من الشاشة الرئيسية واضغط الجرس."),
+      el("div", { style: "background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;line-height:1.8" }, el("b", { text: "أندرويد (Chrome):" }), el("br"), "اضغط القائمة ⋮ ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»، ثم اضغط الجرس."),
+    ),
+    el("div", { class: "btns" }, el("button", { class: "btn soft", type: "button", onclick: close }, "فهمت")),
+  );
+  dialog.addEventListener("cancel", close);
+  dialogOpen = true;
+  document.body.append(dialog);
+  dialog.showModal();
+}
+
+async function enableNotifications() {
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") {
+    toast("لم يُسمح بالإشعارات. فعّلها من إعدادات المتصفح لهذا الموقع.", "err");
+    return;
+  }
+  const info = await request("/api/admin/push");
+  if (!info.enabled) throw new Error("الإشعارات غير مهيأة على الخادم.");
+  const subscription =
+    (await currentSubscription()) ||
+    (await swRegistration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyToBytes(info.publicKey) }));
+  await request("/api/admin/push", { method: "POST", body: JSON.stringify(subscription.toJSON()) });
+  paintNotify(true);
+  toast("تم تفعيل الإشعارات. سنرسل لك إشعارًا تجريبيًا الآن.", "ok");
+  await request("/api/admin/push", { method: "POST", body: JSON.stringify({ test: true }) });
+}
+
+async function disableNotifications() {
+  const subscription = await currentSubscription();
+  if (subscription) {
+    await request("/api/admin/push", { method: "DELETE", body: JSON.stringify({ endpoint: subscription.endpoint }) }).catch(() => {});
+    await subscription.unsubscribe();
+  }
+  paintNotify(false);
+  toast("تم إيقاف الإشعارات على هذا الجهاز.");
+}
+
+notifyButton.addEventListener("click", async () => {
+  if (!pushSupported) {
+    explainNotifications();
+    return;
+  }
+  notifyButton.disabled = true;
+  try {
+    if (notifyButton.classList.contains("on")) await disableNotifications();
+    else await enableNotifications();
+  } catch (error) {
+    toast(error.message, "err");
+  } finally {
+    notifyButton.disabled = false;
+  }
+});
+
+async function setupNotifications() {
+  paintNotify(false);
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    swRegistration = await navigator.serviceWorker.register("/admin/sw.js", { scope: "/admin/" });
+  } catch (error) {
+    console.error("Service worker registration failed:", error.message);
+    return;
+  }
+  if (!pushSupported || Notification.permission !== "granted") return;
+  const subscription = await currentSubscription();
+  if (subscription) {
+    paintNotify(true);
+    // Re-enrol silently so a device the server forgot keeps receiving alerts.
+    request("/api/admin/push", { method: "POST", body: JSON.stringify(subscription.toJSON()) }).catch(() => {});
+  }
+}
+
 /* ---------- stats, chips, list ---------- */
 
 async function openTracking(order, onUpdate, onUnlink) {
@@ -999,6 +1108,7 @@ function showLogin() {
   ordersPanel.hidden = true;
   logoutButton.hidden = true;
   refreshButton.hidden = true;
+  notifyButton.hidden = true;
   loginPanel.hidden = false;
   knownIds = null;
 }
@@ -1008,6 +1118,7 @@ function showOrders() {
   ordersPanel.hidden = false;
   logoutButton.hidden = false;
   refreshButton.hidden = false;
+  notifyButton.hidden = false;
   loadOrders();
   clearInterval(refreshTimer);
   refreshTimer = setInterval(loadOrders, 15000);
@@ -1064,6 +1175,8 @@ request("/api/admin/orders")
     loginPanel.hidden = true;
     logoutButton.hidden = false;
     refreshButton.hidden = false;
+    notifyButton.hidden = false;
+  notifyButton.hidden = false;
     renderStats();
     renderChips();
     renderList();
@@ -1075,3 +1188,5 @@ request("/api/admin/orders")
     loginPanel.hidden = false;
     if (error.message !== "يلزم تسجيل الدخول للمتابعة.") loginMessage.textContent = error.message;
   });
+
+setupNotifications();
