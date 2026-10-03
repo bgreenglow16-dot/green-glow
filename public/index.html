@@ -139,6 +139,8 @@ h2 .lat{color:var(--g6);font-size:.8em}
 .st.in .dot{background:var(--bg);color:var(--gold);box-shadow:0 0 0 8px var(--iv)}
 .st h3{font-size:24px;margin-bottom:8px}.st p{color:var(--mut)}
 @media(max-width:760px){.steps{grid-template-columns:1fr}.line{display:none}}
+.hv{margin:64px auto 0;max-width:340px;text-align:center}.hv p{font:600 20px var(--hd);color:var(--g6);margin-bottom:18px}
+.hv video{display:block;width:100%;aspect-ratio:9/16;background:var(--bg);border-radius:28px;box-shadow:0 0 0 1px rgba(207,174,107,.5),0 30px 60px -30px rgba(11,31,23,.7)}
 /* order */
 .order{background:var(--iv2)}
 .ob{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;align-items:start}
@@ -342,7 +344,9 @@ header{transition:none}header.hide{transform:none}
 <div class="st rv"><div class="dot">01</div><h3>املأ الطلب</h3><p>اختر المنتج والكمية، ثم اسمك ورقمك وولايتك. أقل من دقيقة.</p></div>
 <div class="st rv" style="--d:.15s"><div class="dot">02</div><h3>مكالمة تأكيد</h3><p>نتصل بك لتأكيد العنوان والكمية قبل الشحن.</p></div>
 <div class="st rv" style="--d:.3s"><div class="dot">03</div><h3>استلم وادفع</h3><p>يصلك الطلب وتدفع عند الاستلام.</p></div>
-</div></div></section>
+</div>
+<div class="hv rv"><p>شاهد كيف تطلب في أقل من دقيقة</p><video controls playsinline preload="none" poster="/video/how-to-order-poster.jpg" aria-label="فيديو توضيحي لطريقة الطلب عبر الموقع"><source src="/video/how-to-order.mp4" type="video/mp4"></video></div>
+</div></section>
 
 <section class="order" id="order"><div class="wrap">
 <div class="sh"><div class="rv"><div class="tag" style="color:var(--g6)">الطلب</div><h2>أكمل طلبك <span class="lat">en une minute</span></h2></div><p class="rv" style="--d:.1s">الدفع عند الاستلام. لن نشحن أي طلب قبل مكالمة التأكيد.</p></div>
