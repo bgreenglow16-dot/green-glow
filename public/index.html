@@ -139,8 +139,20 @@ h2 .lat{color:var(--g6);font-size:.8em}
 .st.in .dot{background:var(--bg);color:var(--gold);box-shadow:0 0 0 8px var(--iv)}
 .st h3{font-size:24px;margin-bottom:8px}.st p{color:var(--mut)}
 @media(max-width:760px){.steps{grid-template-columns:1fr}.line{display:none}}
-.hv{margin:64px auto 0;max-width:340px;text-align:center}.hv p{font:600 20px var(--hd);color:var(--g6);margin-bottom:18px}
-.hv video{display:block;width:100%;aspect-ratio:9/16;background:var(--bg);border-radius:28px;box-shadow:0 0 0 1px rgba(207,174,107,.5),0 30px 60px -30px rgba(11,31,23,.7)}
+.hvc{position:relative;overflow:hidden;display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:center;margin-bottom:80px;padding:56px 56px 56px 40px;border-radius:36px;background:radial-gradient(120% 120% at 100% 0,#1e4a37,var(--bg) 60%);color:var(--iv);box-shadow:0 40px 80px -40px rgba(11,31,23,.8),inset 0 0 0 1px rgba(207,174,107,.35)}
+.hvc::before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(rgba(207,174,107,.22),transparent 70%);top:-160px;inset-inline-start:-120px;pointer-events:none}
+.hvc .tx{position:relative}.hvc h3{font-size:clamp(30px,4vw,46px);line-height:1.2;margin:14px 0 14px}.hvc h3 .gd{color:var(--gold2)}
+.hvc .tx p{color:#b9c9bd;max-width:44ch;margin-bottom:26px}
+.hvc .meta{display:flex;gap:10px;flex-wrap:wrap}.hvc .meta span{font-size:13px;padding:7px 14px;border-radius:999px;background:rgba(246,240,228,.08);box-shadow:inset 0 0 0 1px rgba(207,174,107,.3);color:var(--gold2)}
+.vw{position:relative;justify-self:center;width:100%;max-width:300px;aspect-ratio:9/16;border-radius:32px;padding:8px;background:linear-gradient(160deg,var(--gold2),#8a6f3a);box-shadow:0 40px 70px -30px #000,0 0 0 1px rgba(255,255,255,.1)}
+.vw video{display:block;width:100%;height:100%;object-fit:cover;border-radius:25px;background:#000}
+.vw .pl{position:absolute;inset:8px;border:0;border-radius:25px;cursor:pointer;display:grid;place-items:center;background:linear-gradient(180deg,rgba(11,31,23,.05),rgba(11,31,23,.55));transition:opacity .4s}
+.vw.on .pl{opacity:0;pointer-events:none}
+.vw .pl i{font-style:normal;width:84px;height:84px;border-radius:50%;background:var(--gold);color:var(--bg);display:grid;place-items:center;font-size:30px;padding-inline-start:5px;box-shadow:0 0 0 0 rgba(207,174,107,.6);animation:pls 2.2s infinite}
+.vw .pl b{position:absolute;bottom:64px;font:600 14px var(--bd);color:var(--iv);background:rgba(11,31,23,.7);padding:7px 16px;border-radius:999px;backdrop-filter:blur(6px)}
+@keyframes pls{70%{box-shadow:0 0 0 22px rgba(207,174,107,0)}100%{box-shadow:0 0 0 0 rgba(207,174,107,0)}}
+@media(max-width:860px){.hvc{grid-template-columns:1fr;padding:36px 22px 40px;text-align:center;gap:32px;border-radius:28px;margin-bottom:56px}.hvc .tx p{margin-inline:auto}.hvc .meta{justify-content:center}.hvc .tag::before{display:none}}
+.vl{display:inline-flex;align-items:center;gap:8px}.vl i{font-style:normal;color:var(--gold)}
 /* order */
 .order{background:var(--iv2)}
 .ob{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;align-items:start}
@@ -266,7 +278,7 @@ header{transition:none}header.hide{transform:none}
 
 <header id="hd"><div class="bar">
 <a class="logo" href="#top"><svg viewBox="0 0 74 74"><path d="M37 66C37 40 46 22 66 10C62 38 52 58 37 66ZM37 66C37 46 28 32 8 24C12 48 22 62 37 66Z" fill="#cfae6b"/></svg>GREEN GLOW</a>
-<nav><a href="#products">المنتجات</a><a href="#why">لماذا نحن</a><a href="#how">طريقة الطلب</a><a href="#faq">الأسئلة</a></nav>
+<nav><a href="#products">المنتجات</a><a href="#why">لماذا نحن</a><a href="#how">طريقة الطلب ▶</a><a href="#faq">الأسئلة</a></nav>
 <a class="btn" href="#order">اطلب الآن<i>←</i></a></div></header>
 
 <main id="top">
@@ -278,7 +290,7 @@ header{transition:none}header.hide{transform:none}
 <h1><span class="ln"><span>الطبيعة في</span></span><span class="ln"><span style="transition-delay:.12s">خدمة <span class="gd">شعرك</span></span></span></h1>
 <div class="fr lat fd-up" style="transition-delay:.35s">La nature au service de vos cheveux</div>
 <p class="lead fd-up" style="transition-delay:.45s">زيت ذكر الثوم لشعر أقوى وأكثف، ولبان ذكر الثوم لبشرة نقية ومشرقة. مكونات طبيعية بلا بارابين، وتدفع عند الاستلام.</p>
-<div class="cta fd-up" style="transition-delay:.55s"><a class="btn" href="#order">اطلب الآن · الدفع عند الاستلام<i>←</i></a><a class="ghost" href="#products">اكتشف المنتجات</a></div>
+<div class="cta fd-up" style="transition-delay:.55s"><a class="btn" href="#order">اطلب الآن · الدفع عند الاستلام<i>←</i></a><a class="ghost vl" href="#howvid"><i>▶</i>شاهد طريقة الطلب</a><a class="ghost" href="#products">اكتشف المنتجات</a></div>
 <div class="trust fd-up" style="transition-delay:.7s"><div><b data-c="100">0</b>% طبيعي</div><div><b data-c="43" data-wc>0</b>ولاية توصيل</div><div><b>0</b>بارابين</div></div>
 </div>
 <div class="stage" id="stage"><div class="orbit"></div>
@@ -339,13 +351,15 @@ header{transition:none}header.hide{transform:none}
 </div></div></section>
 
 <section id="how"><div class="wrap">
+<div class="hvc rv" id="howvid"><div class="tx"><div class="tag">فيديو توضيحي</div><h3>شاهد كيف <span class="gd">تطلب</span> في أقل من دقيقة</h3><p>شرح بسيط خطوة بخطوة: من اختيار المنتج إلى تأكيد الطلب. الدفع عند الاستلام.</p><div class="meta"><span>⏱ 42 ثانية</span><span>خطوات بسيطة</span><span>الدفع عند الاستلام</span></div></div>
+<div class="vw" id="vw"><video id="hv" controls playsinline preload="none" poster="/video/how-to-order-poster.jpg" aria-label="فيديو توضيحي لطريقة الطلب عبر الموقع"><source src="/video/how-to-order.mp4" type="video/mp4"></video><button class="pl" id="hvp" type="button" aria-label="تشغيل الفيديو"><i>▶</i><b>اضغط للمشاهدة</b></button></div></div>
+<script>(function(){var v=document.getElementById("hv"),w=document.getElementById("vw"),b=document.getElementById("hvp");b.onclick=function(){v.play()};v.onplay=function(){w.classList.add("on")};v.onended=function(){w.classList.remove("on");v.load()}})()</script>
 <div class="sh"><div class="rv"><div class="tag" style="color:var(--g6)">بسيط وسريع</div><h2>من الطلب إلى بابك</h2></div></div>
 <div class="steps" id="steps"><div class="line"><i id="lnp"></i></div>
 <div class="st rv"><div class="dot">01</div><h3>املأ الطلب</h3><p>اختر المنتج والكمية، ثم اسمك ورقمك وولايتك. أقل من دقيقة.</p></div>
 <div class="st rv" style="--d:.15s"><div class="dot">02</div><h3>مكالمة تأكيد</h3><p>نتصل بك لتأكيد العنوان والكمية قبل الشحن.</p></div>
 <div class="st rv" style="--d:.3s"><div class="dot">03</div><h3>استلم وادفع</h3><p>يصلك الطلب وتدفع عند الاستلام.</p></div>
 </div>
-<div class="hv rv"><p>شاهد كيف تطلب في أقل من دقيقة</p><video controls playsinline preload="none" poster="/video/how-to-order-poster.jpg" aria-label="فيديو توضيحي لطريقة الطلب عبر الموقع"><source src="/video/how-to-order.mp4" type="video/mp4"></video></div>
 </div></section>
 
 <section class="order" id="order"><div class="wrap">
