@@ -72,8 +72,7 @@ orderForm.addEventListener(
         throw new Error(result.error || "تعذر تسجيل الطلب. حاول مرة أخرى.");
       }
 
-      document.querySelector("#okt").textContent =
-        `رقم طلبك: ${result.orderId}\nسنتصل بك قريبا لتأكيد الطلب.`;
+      document.querySelector("#okt").textContent = "سنتصل بك قريبا لتأكيد الطلب.";
       const waText = [
         `طلب جديد #${result.orderId}`,
         `الاسم: ${value("nm")}`,
